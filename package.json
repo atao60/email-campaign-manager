@@ -1,0 +1,106 @@
+{
+  "name": "@atao60/email-campaign-manager",
+  "version": "0.0.4",
+  "description": "Email Campaign Manager",
+  "main": "./dist/index.cjs",
+  "scripts": {
+    "test": "vitest run",
+    "prepare": "husky",
+    "start:dev:app": "tsx src/main.ts",
+    "watch:dev:app": "tsx watch src/main.ts",
+    "dev:smtp": "maildev --web 1080 --smtp 1025",
+    "wait:dev:app": "wait-on tcp:1025 && \"npm:start:dev:app\"",
+    "start:dev": "concurrently -c \"cyan,magenta\" -n \"MAIL,NODE\" \"npm:dev:smtp\" \"npm:wait:dev:app\"",
+    "build": "tsup",
+    "check": "tsc --noEmit",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "build:debug": "npx tsup --watch --onSuccess \"node --inspect dist/main.js\"",
+    "i18n:extract": "i18next-parser --config i18next-parser.config.js",
+    "license-check": "license-checker-rseidelsohn --summary"
+  },
+  "keywords": [
+    "mailing",
+    "typescript",
+    "DDD",
+    "hexagonal",
+    "CLI",
+    "REST"
+  ],
+  "author": "Pierre Raoul <atao60.dev@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "commander": "^14.0.3",
+    "cors": "^2.8.6",
+    "csv-parse": "^6.2.1",
+    "csv-stringify": "^6.7.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "i18next": "^26.0.6",
+    "i18next-fs-backend": "^2.6.4",
+    "nodemailer": "^8.0.5",
+    "p-queue": "^9.1.2",
+    "pino": "^10.3.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "@eslint/js": "^10.0.1",
+    "@release-it/conventional-changelog": "^10.0.6",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.0",
+    "@types/nodemailer": "^8.0.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "eslint": "^10.2.1",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "i18next-cli": "^1.56.2",
+    "json": "^11.0.0",
+    "license-checker-rseidelsohn": "^4.4.2",
+    "lint-staged": "^16.4.0",
+    "maildev": "^2.2.1",
+    "prettier": "^3.8.3",
+    "release-it": "^19.2.4",
+    "rimraf": "^6.1.3",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.0",
+    "vite": "^8.0.9",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.5",
+    "wait-on": "^9.0.5"
+  },
+  "overrides": {
+    "maildev": {
+      "nodemailer": "^8.0.5"
+    },
+    "undici": "^6.24.0"
+  },
+  "engines": {
+    "node": ">=24.12.0",
+    "npm": ">=11.6.2"
+  },
+  "private": true,
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atao60/personal-mailing-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atao60/personal-mailing-manager/issues"
+  },
+  "homepage": "https://github.com/atao60/personal-mailing-manager#readme",
+  "release": "release-it"
+}

@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "module": "Preserve",
+    "target": "es2022",
+    "types": ["node"],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "emitDeclarationOnly": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "lib": ["es2023"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "paths": {
+      "@domain/*": ["domain/*"],
+      "@application/*": ["application/*"],
+      "@infrastructure/*": ["infrastructure/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

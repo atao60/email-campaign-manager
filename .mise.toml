@@ -1,0 +1,11 @@
+[tools]
+node = "24.12.0"
+npm = "11.6.2"
+
+[env]
+SMTP_MODE = "local"
+NODE_ENV = "development"
+
+[tasks."dev"]
+description = "Lancement complet (SMTP + App)"
+run = "npm run dev"
