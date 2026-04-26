@@ -1,0 +1,4 @@
+id,firstName,lastName,email,jobTitle,company
+c-201,David,Lefebvre,david.l@example.com,CTO,Startup Inc
+c-202,Robert,Martin,bob.martin@example.com,Senior PM,Innovate LLC
+c-203,Eva,Roux,eva.roux@example.com,,Creative Studio

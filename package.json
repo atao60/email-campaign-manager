@@ -9,16 +9,17 @@
     "start:dev:app": "tsx src/main.ts",
     "watch:dev:app": "tsx watch src/main.ts",
     "dev:smtp": "maildev --web 1080 --smtp 1025",
-    "wait:dev:app": "wait-on tcp:1025 && \"npm:start:dev:app\"",
+    "wait:dev:app": "wait-on tcp:1025 && npm run start:dev:app",
     "start:dev": "concurrently -c \"cyan,magenta\" -n \"MAIL,NODE\" \"npm:dev:smtp\" \"npm:wait:dev:app\"",
     "build": "tsup",
     "check": "tsc --noEmit",
-    "start": "node dist/index.js",
+    "start": "node dist/main.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "build:debug": "npx tsup --watch --onSuccess \"node --inspect dist/main.js\"",
     "i18n:extract": "i18next-parser --config i18next-parser.config.js",
-    "license-check": "license-checker-rseidelsohn --summary"
+    "license-check": "license-checker-rseidelsohn --summary",
+    "release": "release-it"
   },
   "keywords": [
     "mailing",
@@ -35,7 +36,9 @@
     "commander": "^14.0.3",
     "cors": "^2.8.6",
     "csv-parse": "^6.2.1",
+    "csv-parser": "^3.2.0",
     "csv-stringify": "^6.7.0",
+    "csv-writer": "^1.6.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "i18next": "^26.0.6",
@@ -101,6 +104,5 @@
   "bugs": {
     "url": "https://github.com/atao60/personal-mailing-manager/issues"
   },
-  "homepage": "https://github.com/atao60/personal-mailing-manager#readme",
-  "release": "release-it"
+  "homepage": "https://github.com/atao60/personal-mailing-manager#readme"
 }
