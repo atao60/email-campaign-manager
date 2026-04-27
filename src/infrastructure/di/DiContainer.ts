@@ -1,3 +1,5 @@
+// Type for a function that manufactures a service (Factory).
+// It receives the container itself to resolve its own dependencies recursively.
 type Factory<T> = (container: DiContainer) => T;
 
 /**
@@ -8,8 +10,8 @@ type Factory<T> = (container: DiContainer) => T;
 export class DiContainer {
   private static instance: DiContainer;
 
-  private readonly services = new Map<symbol, any>();
-  private readonly factories = new Map<symbol, Factory<any>>();
+  private readonly services = new Map<symbol, unknown>();
+  private readonly factories = new Map<symbol, Factory<unknown>>();
 
   private constructor() {}
 
@@ -30,7 +32,7 @@ export class DiContainer {
 
   public resolve<T>(key: symbol): T {
     if (this.services.has(key)) {
-      return this.services.get(key);
+      return this.services.get(key) as T;
     }
 
     const factory = this.factories.get(key);
@@ -38,7 +40,7 @@ export class DiContainer {
       throw new Error(`DI Error: Aucun service enregistré pour la clé ${String(key)}`);
     }
 
-    const instance = factory(this);
+    const instance = factory(this) as T;
     this.services.set(key, instance);
 
     return instance;

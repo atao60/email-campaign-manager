@@ -1,4 +1,11 @@
-
+/**
+ * DI_TYPES: The Public API
+ * Used by Domain, Application, and Presentation layers.
+ * These represent the core Ports and Use Cases.
+ *
+ * Notes. Represents the components that are allowed to be resolved and injected across layer boundaries.
+ *        It contains your Domain Ports (interfaces) and Application Use Cases.
+ */
 export const DI_TYPES = {
   // Services
   LanguageService: Symbol.for('LanguageService'),
@@ -10,4 +17,23 @@ export const DI_TYPES = {
 
   // Use Cases
   MergeMailingListsUseCase: Symbol.for('MergeMailingListsUseCase')
+};
+
+/**
+ * INFRA_TYPES: The Private Implementation Details
+ * STRICTLY FOR INTERNAL INFRASTRUCTURE USE ONLY.
+ * Never inject these into Domain or Application layers.
+ *
+ * Note. Represents internal dependencies that exist only to make the infrastructure layer work.
+ *       The rest of the application should never know they exist.
+ */
+export const INFRA_TYPES = {
+  // Databases & Caches
+  RedisClient: Symbol.for('RedisClient'),
+
+  // Internal Adapters
+  DirectMailer: Symbol.for('DirectMailer'),
+
+  // Background Workers
+  EmailWorker: Symbol.for('EmailWorker')
 };

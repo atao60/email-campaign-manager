@@ -5,16 +5,21 @@ import { configureDependencyInjection } from '@config/di.config';
 import { DiContainer } from '@infrastructure/di/DiContainer';
 import { startCli } from '@presentation/cli/CommandLineInterface';
 import { startRestApi } from '@presentation/rest/ExpressApi';
+import { INFRA_TYPES } from '@infrastructure/di/Types';
 
 async function bootstrap() {
-  // 1. Setup IoC
+  // Setup IoC
   configureDependencyInjection();
   const container = DiContainer.getInstance();
 
-  // 2. Start REST API in background
+  // Start Background Workers (forces the lazy-loaded container to instantiate the worker)
+  container.resolve(INFRA_TYPES.EmailWorker);
+  console.log('Background Email Worker started.');
+
+  // Start REST API in background
   startRestApi(container);
 
-  // 3. Process CLI commands
+  // Process CLI commands
   if (argv.length > 2) {
     startCli(container);
   } else {

@@ -9,8 +9,8 @@
     "start:dev:app": "tsx src/main.ts",
     "watch:dev:app": "tsx watch src/main.ts",
     "dev:smtp": "maildev --web 1080 --smtp 1025",
-    "wait:dev:app": "wait-on tcp:1025 && npm run start:dev:app",
-    "start:dev": "concurrently -c \"cyan,magenta\" -n \"MAIL,NODE\" \"npm:dev:smtp\" \"npm:wait:dev:app\"",
+    "wait:dev:app": "wait-on tcp:1025 tcp:6379 && tsx scripts/check-redis.ts && npm run start:dev:app",
+    "start:dev": "concurrently -c \"cyan,yellow,magenta\" -n \"MAIL,REDIS,NODE\" \"npm:dev:smtp\" \"npm:dev:redis\" \"npm:wait:dev:app\"",
     "build": "tsup",
     "check": "tsc --noEmit",
     "start": "node dist/main.js",
@@ -19,13 +19,16 @@
     "build:debug": "npx tsup --watch --onSuccess \"node --inspect dist/main.js\"",
     "i18n:extract": "i18next-parser --config i18next-parser.config.js",
     "license-check": "license-checker-rseidelsohn --summary",
-    "release": "release-it"
+    "release": "release-it",
+    "dev:redis": "tsx scripts/local-redis.ts"
   },
   "keywords": [
     "mailing",
     "typescript",
     "DDD",
     "hexagonal",
+    "SOLID",
+    "API",
     "CLI",
     "REST"
   ],
@@ -33,6 +36,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
+    "bullmq": "^5.76.2",
     "commander": "^14.0.3",
     "cors": "^2.8.6",
     "csv-parse": "^6.2.1",
@@ -43,6 +47,7 @@
     "express": "^5.2.1",
     "i18next": "^26.0.6",
     "i18next-fs-backend": "^2.6.4",
+    "ioredis": "^5.10.1",
     "nodemailer": "^8.0.5",
     "p-queue": "^9.1.2",
     "pino": "^10.3.1",
@@ -67,6 +72,7 @@
     "lint-staged": "^16.4.0",
     "maildev": "^2.2.1",
     "prettier": "^3.8.3",
+    "redis-memory-server": "^0.16.1",
     "release-it": "^19.2.4",
     "rimraf": "^6.1.3",
     "tsup": "^8.5.1",
