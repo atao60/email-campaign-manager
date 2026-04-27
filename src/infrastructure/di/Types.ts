@@ -37,3 +37,19 @@ export const INFRA_TYPES = {
   // Background Workers
   EmailWorker: Symbol.for('EmailWorker')
 };
+
+/**
+ * PRESENTATION_TYPES: The Driving Layer Dependencies
+ * STRICTLY FOR USE IN THE PRESENTATION LAYER (CLI, REST APIs).
+ *
+ * * These symbols represent services, controllers, or utilities that handle
+ * user interfaces and delivery mechanisms. They orchestrate user input and
+ * format output, but contain no core business logic.
+ *
+ * * ARCHITECTURAL RULE: Never inject these symbols into Application Use Cases
+ * or Domain entities. The core application must remain completely agnostic
+ * of its presentation mechanism.
+ */
+export const PRESENTATION_TYPES = {
+  CliOutputService: Symbol.for('CliOutputService')
+};

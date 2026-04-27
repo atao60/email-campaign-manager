@@ -1,0 +1,13 @@
+{
+  "cli": {
+    "commands": {
+      "merge": {
+        "description": "Merge multiple CSV mailing lists and remove duplicates",
+        "argOutput": "Output CSV file path",
+        "argInputs": "Input CSV files",
+        "success": "Successfully merged {{count}} lists into {{output}}",
+        "error": "Error: Could not merge lists. Please check your file paths."
+      }
+    }
+  }
+}

@@ -1,22 +1,37 @@
 import i18next from 'i18next';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { cwd } from 'node:process';
-
 import { type LanguagePort } from '@domain/ports/LanguagePort';
+
+export const DEFAULT_LANGUAGE = 'fr';
 
 export class I18nextLanguageAdapter implements LanguagePort {
   public async init(): Promise<void> {
-    const frTranslations = JSON.parse(
-      await readFile(join(cwd(), 'locales', 'fr', 'translation.json'), 'utf-8')
-    );
+    // Helper to safely load JSON files without crashing if they don't exist yet
+    const loadTranslations = async (locale: string) => {
+      try {
+        const filePath = path.join(cwd(), 'locales', locale, 'ui.json');
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+        return JSON.parse(fileContent);
+      } catch (error) {
+        return {};
+      }
+    };
+
+    const frTranslations = await loadTranslations('fr');
+    const enTranslations = await loadTranslations('en');
 
     await i18next.init({
-      lng: 'fr',
+      lng: DEFAULT_LANGUAGE,
       fallbackLng: 'en',
       resources: {
         fr: { translation: frTranslations },
+        en: { translation: enTranslations },
       },
+      interpolation: {
+        escapeValue: false, // CLI doesn't need HTML escaping
+      }
     });
   }
 

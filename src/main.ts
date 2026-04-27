@@ -1,4 +1,5 @@
-import { argv } from 'node:process';
+import { argv, exit } from 'node:process';
+import { error, log } from 'node:console';
 
 import { configureDependencyInjection } from '@config/di.config';
 
@@ -8,23 +9,34 @@ import { startRestApi } from '@presentation/rest/ExpressApi';
 import { INFRA_TYPES } from '@infrastructure/di/Types';
 
 async function bootstrap() {
-  // Setup IoC
+
   configureDependencyInjection();
   const container = DiContainer.getInstance();
 
-  // Start Background Workers (forces the lazy-loaded container to instantiate the worker)
-  container.resolve(INFRA_TYPES.EmailWorker);
-  console.log('Background Email Worker started.');
+  const isCliMode = argv.length > 2;
 
-  // Start REST API in background
-  startRestApi(container);
-
-  // Process CLI commands
-  if (argv.length > 2) {
-    startCli(container);
+  if (isCliMode) {
+    // === CLI MODE ===
+    // We only run the CLI. We await it so Node knows when it's done.
+    await startCli(container);
+    // Exit cleanly once Commander is finished, dropping any active connections (like Redis)
+    exit(0);
   } else {
-    console.log('App running in server mode. Use CLI arguments to trigger specific commands.');
+    // === SERVER MODE ===
+    log('Starting application in Server Mode...');
+
+    // Start Background Workers (forces the lazy-loaded container to instantiate the worker)
+    container.resolve(INFRA_TYPES.EmailWorker);
+    log('Background Email Worker started.');
+
+    // Start REST API in background
+    startRestApi(container);
+
+    log('App running in server mode. Use CLI arguments to trigger specific commands.');
   }
 }
 
-bootstrap().catch(console.error);
+bootstrap().catch((err) => {
+  error('Fatal bootstrap error:', err);
+  exit(1);
+});

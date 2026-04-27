@@ -1,0 +1,13 @@
+{
+  "cli": {
+    "commands": {
+      "merge": {
+        "description": "Fusionne plusieurs listes de diffusion CSV et supprime les doublons",
+        "argOutput": "Chemin du fichier CSV de sortie",
+        "argInputs": "Fichiers CSV d'entrée",
+        "success": "Fusion réussie de {{count}} listes dans {{output}}",
+        "error": "Erreur : Impossible de fusionner les listes. Veuillez vérifier les chemins de vos fichiers."
+      }
+    }
+  }
+}

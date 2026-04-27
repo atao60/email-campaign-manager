@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 
 import { DiContainer } from '@infrastructure/di/DiContainer';
-import { DI_TYPES, INFRA_TYPES } from '@infrastructure/di/Types';
+import { DI_TYPES, INFRA_TYPES, PRESENTATION_TYPES } from '@infrastructure/di/Types';
 
 // Adapters
 import { ConsoleLogger } from '@infrastructure/services/ConsoleLogger'; // Assuming a basic logger
@@ -13,6 +13,9 @@ import { EmailWorker } from '@infrastructure/workers/EmailWorker';
 
 // Use Cases
 import { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
+
+// Presentation
+import { CliOutputService } from '@presentation/cli/services/CliOutputService';
 
 export function configureDependencyInjection(): void {
   const container = DiContainer.getInstance();
@@ -47,5 +50,11 @@ export function configureDependencyInjection(): void {
   // 4. Use Cases
   container.registerSingleton(DI_TYPES.MergeMailingListsUseCase, (c) =>
     new MergeMailingListsUseCase(c.resolve(DI_TYPES.CsvPort))
+  );
+
+
+  // 5. Presentation
+  container.registerSingleton(PRESENTATION_TYPES.CliOutputService, (c) =>
+    new CliOutputService(c.resolve(DI_TYPES.LanguageService))
   );
 }
