@@ -4,7 +4,9 @@ import Redis from 'ioredis';
 import { type EmailPort } from '@domain/ports/EmailPort';
 import { type LoggerPort } from '@domain/ports/LoggerPort';
 import { Contact } from '@domain/models/Contact';
-import { type ContactId } from '@domain/models/BrandedTypes';
+import { type ContactId, type FailedEmailId } from '@domain/models/BrandedTypes';
+import { type FailedEmailRepositoryPort } from '@domain/ports/FailedEmailRepositoryPort';
+import { FailedEmail } from '@domain/models/FailedEmail';
 
 /**
  * The Email Consumer
@@ -15,6 +17,7 @@ export class EmailWorker {
   constructor(
     redisClient: Redis,
     private readonly actualMailer: EmailPort, // Injects NodemailerAdapter
+    private readonly failedEmailRepo: FailedEmailRepositoryPort,
     private readonly logger: LoggerPort
   ) {
     this.worker = new Worker(
@@ -23,13 +26,14 @@ export class EmailWorker {
         this.logger.info(`Processing email job ${job.id} for ${job.data.contact.email}`);
 
         // 1. Reconstruct the Domain Entity from the parsed JSON payload
+        const contactData = job.data.contact;
         const contact = new Contact(
-          job.data.contact.id as ContactId,
-          job.data.contact.firstName,
-          job.data.contact.lastName,
-          job.data.contact.email,
-          job.data.contact.jobTitle,
-          job.data.contact.company
+          contactData.id as ContactId,
+          contactData.firstName,
+          contactData.lastName,
+          contactData.email,
+          contactData.jobTitle,
+          contactData.company
         );
 
         // 2. Execute the actual sending
@@ -42,9 +46,24 @@ export class EmailWorker {
       this.logger.info(`Job ${job.id} completed successfully`);
     });
 
-    this.worker.on('failed', (job, err) => {
-      this.logger.error(`Job ${job?.id} failed`, err);
-      // Here you would tie into your FailedEmailRepositoryPort for tracking
+    this.worker.on('failed', async (job, err) => {
+      this.logger.error(`Job ${job?.id} failed for ${job?.data.contact.email}`, err);
+
+      if (!job) {
+        return;
+      }
+
+      const failure = new FailedEmail(
+        crypto.randomUUID() as FailedEmailId,
+        job.data.contact.id as ContactId,
+        job.data.contact.email,
+        err.message,
+        new Date()
+      );
+
+      await this.failedEmailRepo.save(failure).catch((repoErr) => {
+        this.logger.error('CRITICAL: Failed to save failure record to repository', repoErr);
+      });
     });
   }
 

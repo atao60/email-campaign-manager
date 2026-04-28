@@ -1,20 +1,15 @@
 import process from 'node:process';
-
 import { Command } from 'commander';
+
 import { type DiContainer } from '@infrastructure/di/DiContainer';
 import { DI_TYPES, PRESENTATION_TYPES } from '@infrastructure/di/Types';
-import { type MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
-import { type LanguagePort } from '@domain/ports/LanguagePort';
-import { type LoggerPort } from '@domain/ports/LoggerPort';
-import { type CliOutputService } from '@presentation/cli/services/CliOutputService';
-import { type SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
 
 export async function startCli(container: DiContainer): Promise<void> {
   const program = new Command();
 
-  const i18n = container.resolve<LanguagePort>(DI_TYPES.LanguageService);
-  const logger = container.resolve<LoggerPort>(DI_TYPES.Logger);
-  const outputService = container.resolve<CliOutputService>(PRESENTATION_TYPES.CliOutputService);
+  const i18n = container.resolve(DI_TYPES.LanguageService);
+  const logger = container.resolve(DI_TYPES.Logger);
+  const outputService = container.resolve(PRESENTATION_TYPES.CliOutputService);
 
   await i18n.init();
 
@@ -25,7 +20,7 @@ export async function startCli(container: DiContainer): Promise<void> {
     .argument('<inputs...>', i18n.translate('cli.commands.merge.argInputs'))
     .option('-v, --verbose', 'Output internal telemetry')
     .action(async (output, inputs, options) => {
-      const useCase = container.resolve<MergeMailingListsUseCase>(DI_TYPES.MergeMailingListsUseCase);
+      const useCase = container.resolve(DI_TYPES.MergeMailingListsUseCase);
 
       try {
         if (options.verbose) {
@@ -51,7 +46,7 @@ export async function startCli(container: DiContainer): Promise<void> {
     .description('Read contacts from a CSV and send them a campaign email')
     .argument('<csvFile>', 'Path to the CSV contacts list')
     .action(async (csvFile) => {
-      const useCase = container.resolve<SendCampaignUseCase>(DI_TYPES.SendCampaignUseCase);
+      const useCase = container.resolve(DI_TYPES.SendCampaignUseCase);
 
       const subject = 'Welcome to our new platform!';
       const html = '<h1>Hello {{firstName}},</h1><p>We are thrilled to have you.</p>';

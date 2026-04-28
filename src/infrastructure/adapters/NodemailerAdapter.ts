@@ -11,7 +11,7 @@ export class NodemailerAdapter implements EmailPort {
     host: string = 'localhost',
     port: number = 1025
   ) {
-    // Configured for Maildev local dev server by default. 
+    // Configured for Maildev local dev server by default.
     // Production config injected via JSON config file.
     this.transporter = nodemailer.createTransport({
       host,
@@ -19,18 +19,27 @@ export class NodemailerAdapter implements EmailPort {
       ignoreTLS: true,
       pool: true,
       maxConnections: 5, // Split sending / avoid limitation
-      maxMessages: 100,
+      maxMessages: 100
     });
   }
 
   public async send(contact: Contact, message: EmailMessageDto): Promise<void> {
+    console.log('NodemailerAdapter.send, contact: ', contact.email);
+
+    // FUTURE. TO BE REMOVED. Dirty fail test until a full test available.
+    // Run `npx tsx src/main.ts send-campaign data/fail-test.csv`
+    if (contact.email.includes('fail')) {
+      this.logger.warn(`[SIMULATION] Intentionally failing email for ${contact.email}`);
+      throw new Error('SIMULATED_SMTP_ERROR: Connection refused or host unreachable');
+    }
+
     try {
       await this.transporter.sendMail({
         from: '"Campaign Manager" <noreply@example.com>',
         to: contact.email,
         subject: message.subject,
         html: message.bodyHtml,
-        attachments: message.attachments,
+        attachments: message.attachments
       });
       this.logger.info(`Email sent to ${contact.email}`);
     } catch (error) {

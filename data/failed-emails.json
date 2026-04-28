@@ -1,0 +1,16 @@
+[
+  {
+    "id": "d9a77b5b-43ff-428c-a085-b1d991034478",
+    "contactId": "c-fail-001",
+    "emailAddress": "trigger-fail@example.com",
+    "reason": "SIMULATED_SMTP_ERROR: Connection refused or host unreachable",
+    "failedAt": "2026-04-28T13:13:37.076Z"
+  },
+  {
+    "id": "91e75560-7b8f-48cd-a9ab-0d0f268828c1",
+    "contactId": "c-fail-001",
+    "emailAddress": "trigger-fail@example.com",
+    "reason": "SIMULATED_SMTP_ERROR: Connection refused or host unreachable",
+    "failedAt": "2026-04-28T13:14:59.892Z"
+  }
+]

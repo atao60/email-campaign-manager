@@ -1,3 +1,11 @@
+import type { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
+import type { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
+import type { CsvPort } from '@domain/ports/CsvPort';
+import type { EmailPort } from '@domain/ports/EmailPort';
+import type { LanguagePort } from '@domain/ports/LanguagePort';
+import type { LoggerPort } from '@domain/ports/LoggerPort';
+import type { CliOutputService } from '@presentation/cli/services/CliOutputService';
+
 /**
  * DI_TYPES: The Public API
  * Used by Domain, Application, and Presentation layers.
@@ -8,17 +16,18 @@
  */
 export const DI_TYPES = {
   // Services
-  LanguageService: Symbol.for('LanguageService'),
-  Logger: Symbol.for('Logger'),
+  LanguageService: 'LanguageService',
+  Logger: 'Logger',
 
   // Ports
-  CsvPort: Symbol.for('CsvPort'),
-  EmailPort: Symbol.for('EmailPort'),
+  CsvPort: 'CsvPort',
+  EmailPort: 'EmailPort',
+  FailedEmailRepositoryPort: 'FailedEmailRepositoryPort',
 
   // Use Cases
-  MergeMailingListsUseCase: Symbol.for('MergeMailingListsUseCase'),
-  SendCampaignUseCase: Symbol.for('SendCampaignUseCase')
-};
+  MergeMailingListsUseCase: 'MergeMailingListsUseCase',
+  SendCampaignUseCase: 'SendCampaignUseCase'
+} as const;
 
 /**
  * INFRA_TYPES: The Private Implementation Details
@@ -30,14 +39,14 @@ export const DI_TYPES = {
  */
 export const INFRA_TYPES = {
   // Databases & Caches
-  RedisClient: Symbol.for('RedisClient'),
+  RedisClient: 'RedisClient',
 
   // Internal Adapters
-  DirectMailer: Symbol.for('DirectMailer'),
+  DirectMailer: 'DirectMailer',
 
   // Background Workers
-  EmailWorker: Symbol.for('EmailWorker')
-};
+  EmailWorker: 'EmailWorker'
+} as const;
 
 /**
  * PRESENTATION_TYPES: The Driving Layer Dependencies
@@ -52,5 +61,21 @@ export const INFRA_TYPES = {
  * of its presentation mechanism.
  */
 export const PRESENTATION_TYPES = {
-  CliOutputService: Symbol.for('CliOutputService')
-};
+  CliOutputService: 'CliOutputService'
+} as const;
+
+export type DependencyToken =
+  | (typeof DI_TYPES)[keyof typeof DI_TYPES]
+  | (typeof INFRA_TYPES)[keyof typeof INFRA_TYPES]
+  | (typeof PRESENTATION_TYPES)[keyof typeof PRESENTATION_TYPES];
+
+export interface AppDependencies {
+  [DI_TYPES.LanguageService]: LanguagePort;
+  [DI_TYPES.Logger]: LoggerPort;
+  [DI_TYPES.CsvPort]: CsvPort;
+  [DI_TYPES.EmailPort]: EmailPort;
+  [DI_TYPES.MergeMailingListsUseCase]: MergeMailingListsUseCase;
+  [DI_TYPES.SendCampaignUseCase]: SendCampaignUseCase;
+
+  [PRESENTATION_TYPES.CliOutputService]: CliOutputService;
+}

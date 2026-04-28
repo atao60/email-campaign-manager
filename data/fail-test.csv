@@ -1,0 +1,3 @@
+id,firstName,lastName,email,jobTitle,company
+c-fail-001,Bad,Luck,trigger-fail@example.com,Tester,Fail Inc
+c-success-002,Good,Luck,works@example.com,Tester,Success Inc
