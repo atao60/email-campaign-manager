@@ -11,6 +11,17 @@
       "sendCampaign": {
         "success": "Successfully queued {{count}} emails from {{file}}",
         "error": "Error: Could not queue the campaign. Please check the logs."
+      },
+      "status": {
+        "description": "View real-time background processing metrics",
+        "header": "Email Queue Status:",
+        "waiting": "  Waiting               : {{count}}",
+        "active": "  Active                : {{count}}",
+        "completed": "  Completed             : {{count}}",
+        "failed": "  Queue Failed          : {{count}}",
+        "separator": "-----------------------------------",
+        "hardFailures": "  Hard Failures         : {{count}}",
+        "error": "Error: Could not retrieve the campaign status."
       }
     }
   }

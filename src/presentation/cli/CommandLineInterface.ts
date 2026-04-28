@@ -65,5 +65,32 @@ export async function startCli(container: DiContainer): Promise<void> {
       }
     });
 
+  program
+    .command('campaign-status')
+    .description('View real-time background processing metrics')
+    .action(async () => {
+      const useCase = container.resolve(DI_TYPES.GetCampaignStatusUseCase);
+
+      try {
+        const status = await useCase.execute();
+
+        outputService.info('cli.commands.status.header');
+        outputService.raw(i18n.translate('cli.commands.status.waiting', { count: status.waiting.toString() }));
+        outputService.raw(i18n.translate('cli.commands.status.active', { count: status.active.toString() }));
+        outputService.raw(i18n.translate('cli.commands.status.completed', { count: status.completed.toString() }));
+        outputService.raw(i18n.translate('cli.commands.status.failed', { count: status.failed.toString() }));
+        outputService.raw(i18n.translate('cli.commands.status.separator'));
+        outputService.raw(
+          i18n.translate('cli.commands.status.hardFailures', { count: status.hardFailures.toString() })
+        );
+
+        process.exit(0);
+      } catch (error) {
+        logger.error('Failed to retrieve status', error);
+        outputService.error('cli.commands.status.error');
+        process.exit(1);
+      }
+    });
+
   await program.parseAsync(process.argv);
 }

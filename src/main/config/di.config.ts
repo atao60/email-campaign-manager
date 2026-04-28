@@ -19,6 +19,8 @@ import { MergeMailingListsUseCase } from '@application/usecases/MergeMailingList
 import { CliOutputService } from '@presentation/cli/services/CliOutputService';
 import { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
 import type { EmailPort } from '@domain/ports/EmailPort';
+import { BullMqMonitorAdapter } from '@infrastructure/adapters/BullMqMonitorAdapter';
+import { GetCampaignStatusUseCase } from '@application/usecases/GetCampaignStatusUseCase';
 
 interface InfraDependencies {
   [INFRA_TYPES.RedisClient]: Redis;
@@ -52,6 +54,11 @@ export function configureDependencyInjection(): void {
     (c) => new RedisEmailQueueAdapter(resolveInfra(c, INFRA_TYPES.RedisClient))
   );
 
+  container.registerSingleton(
+    DI_TYPES.QueueMonitorPort,
+    (c) => new BullMqMonitorAdapter(resolveInfra(c, INFRA_TYPES.RedisClient))
+  );
+
   // 3. Background Workers
   container.registerSingleton(
     INFRA_TYPES.EmailWorker,
@@ -74,6 +81,12 @@ export function configureDependencyInjection(): void {
     DI_TYPES.SendCampaignUseCase,
     (c) =>
       new SendCampaignUseCase(c.resolve(DI_TYPES.CsvPort), c.resolve(DI_TYPES.EmailPort), c.resolve(DI_TYPES.Logger))
+  );
+
+  container.registerSingleton(
+    DI_TYPES.GetCampaignStatusUseCase,
+    (c) =>
+      new GetCampaignStatusUseCase(c.resolve(DI_TYPES.QueueMonitorPort), c.resolve(DI_TYPES.FailedEmailRepositoryPort))
   );
 
   // 5. Presentation
