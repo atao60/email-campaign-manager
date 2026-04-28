@@ -11,10 +11,10 @@ export class I18nextLanguageAdapter implements LanguagePort {
     // Helper to safely load JSON files without crashing if they don't exist yet
     const loadTranslations = async (locale: string) => {
       try {
-        const filePath = path.join(cwd(), 'locales', locale, 'ui.json');
+        const filePath = path.join(cwd(), 'locales', locale, 'cli.json');
         const fileContent = await fs.readFile(filePath, 'utf-8');
         return JSON.parse(fileContent);
-      } catch (error) {
+      } catch {
         return {};
       }
     };
@@ -27,10 +27,10 @@ export class I18nextLanguageAdapter implements LanguagePort {
       fallbackLng: 'en',
       resources: {
         fr: { translation: frTranslations },
-        en: { translation: enTranslations },
+        en: { translation: enTranslations }
       },
       interpolation: {
-        escapeValue: false, // CLI doesn't need HTML escaping
+        escapeValue: false // CLI doesn't need HTML escaping
       }
     });
   }

@@ -16,7 +16,8 @@ export const DI_TYPES = {
   EmailPort: Symbol.for('EmailPort'),
 
   // Use Cases
-  MergeMailingListsUseCase: Symbol.for('MergeMailingListsUseCase')
+  MergeMailingListsUseCase: Symbol.for('MergeMailingListsUseCase'),
+  SendCampaignUseCase: Symbol.for('SendCampaignUseCase')
 };
 
 /**

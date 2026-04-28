@@ -16,6 +16,7 @@ import { MergeMailingListsUseCase } from '@application/usecases/MergeMailingList
 
 // Presentation
 import { CliOutputService } from '@presentation/cli/services/CliOutputService';
+import { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
 
 export function configureDependencyInjection(): void {
   const container = DiContainer.getInstance();
@@ -29,32 +30,40 @@ export function configureDependencyInjection(): void {
   container.registerSingleton(DI_TYPES.CsvPort, () => new CsvAdapter());
 
   // The physical mailer is no longer the public EmailPort, it's an internal dependency
-  container.registerSingleton(INFRA_TYPES.DirectMailer, (c) =>
-    new NodemailerAdapter(c.resolve(DI_TYPES.Logger))
-  );
+  container.registerSingleton(INFRA_TYPES.DirectMailer, (c) => new NodemailerAdapter(c.resolve(DI_TYPES.Logger)));
 
   // The application's EmailPort is now strictly the Redis Queue
-  container.registerSingleton(DI_TYPES.EmailPort, (c) =>
-    new RedisEmailQueueAdapter(c.resolve(INFRA_TYPES.RedisClient))
+  container.registerSingleton(
+    DI_TYPES.EmailPort,
+    (c) => new RedisEmailQueueAdapter(c.resolve(INFRA_TYPES.RedisClient))
   );
 
   // 3. Background Workers
-  container.registerSingleton(INFRA_TYPES.EmailWorker, (c) =>
-    new EmailWorker(
-      c.resolve(INFRA_TYPES.RedisClient),
-      c.resolve(INFRA_TYPES.DirectMailer), // Inject Nodemailer into the worker
-      c.resolve(DI_TYPES.Logger)
-    )
+  container.registerSingleton(
+    INFRA_TYPES.EmailWorker,
+    (c) =>
+      new EmailWorker(
+        c.resolve(INFRA_TYPES.RedisClient),
+        c.resolve(INFRA_TYPES.DirectMailer), // Inject Nodemailer into the worker
+        c.resolve(DI_TYPES.Logger)
+      )
   );
 
   // 4. Use Cases
-  container.registerSingleton(DI_TYPES.MergeMailingListsUseCase, (c) =>
-    new MergeMailingListsUseCase(c.resolve(DI_TYPES.CsvPort))
+  container.registerSingleton(
+    DI_TYPES.MergeMailingListsUseCase,
+    (c) => new MergeMailingListsUseCase(c.resolve(DI_TYPES.CsvPort))
   );
 
+  container.registerSingleton(
+    DI_TYPES.SendCampaignUseCase,
+    (c) =>
+      new SendCampaignUseCase(c.resolve(DI_TYPES.CsvPort), c.resolve(DI_TYPES.EmailPort), c.resolve(DI_TYPES.Logger))
+  );
 
   // 5. Presentation
-  container.registerSingleton(PRESENTATION_TYPES.CliOutputService, (c) =>
-    new CliOutputService(c.resolve(DI_TYPES.LanguageService))
+  container.registerSingleton(
+    PRESENTATION_TYPES.CliOutputService,
+    (c) => new CliOutputService(c.resolve(DI_TYPES.LanguageService))
   );
 }

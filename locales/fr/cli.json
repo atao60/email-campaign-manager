@@ -1,0 +1,17 @@
+{
+  "cli": {
+    "commands": {
+      "merge": {
+        "description": "Fusionne plusieurs listes de diffusion CSV et supprime les doublons",
+        "argOutput": "Chemin du fichier CSV de sortie",
+        "argInputs": "Fichiers CSV d’entrée",
+        "success": "Fusion réussie de {{count}} listes dans {{output}}",
+        "error": "Erreur\u00A0: impossible de fusionner les listes. Veuillez vérifier les chemins de vos fichiers."
+      },
+      "sendCampaign": {
+        "success": "{{count}} e-mails mis en file d’attente avec succès à partir de {{file}}",
+        "error": "Erreur\u00A0: Impossible de mettre la campagne en file d’attente. Veuillez consulter les journaux."
+      }
+    }
+  }
+}

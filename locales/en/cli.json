@@ -7,6 +7,10 @@
         "argInputs": "Input CSV files",
         "success": "Successfully merged {{count}} lists into {{output}}",
         "error": "Error: Could not merge lists. Please check your file paths."
+      },
+      "sendCampaign": {
+        "success": "Successfully queued {{count}} emails from {{file}}",
+        "error": "Error: Could not queue the campaign. Please check the logs."
       }
     }
   }
