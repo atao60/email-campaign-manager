@@ -1,3 +1,4 @@
 {
-  "cSpell.words": ["atao", "Aucun", "bullmq", "enregistré", "maildev", "plusieurs", "usecases"]
+  "cSpell.words": ["atao", "Aucun", "bullmq", "enregistré", "maildev", "plusieurs", "usecases"],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

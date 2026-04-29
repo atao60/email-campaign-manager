@@ -2,9 +2,7 @@
   "compilerOptions": {
     "module": "Preserve",
     "target": "es2022",
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
@@ -22,36 +20,17 @@
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "esModuleInterop": true,
-    "lib": [
-      "es2023"
-    ],
+    "lib": ["es2023"],
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": "./src",
     "paths": {
-      "@domain/*": [
-        "domain/*"
-      ],
-      "@application/*": [
-        "application/*"
-      ],
-      "@infrastructure/*": [
-        "infrastructure/*"
-      ],
-      "@presentation/*": [
-        "presentation/*"
-      ],
-      "@config/*": [
-        "main/config/*"
-      ]
+      "@domain/*": ["./src/domain/*"],
+      "@application/*": ["./src/application/*"],
+      "@infrastructure/*": ["./src/infrastructure/*"],
+      "@presentation/*": ["./src/presentation/*"],
+      "@config/*": ["./src/main/config/*"]
     }
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "scripts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "scripts", "client"]
 }

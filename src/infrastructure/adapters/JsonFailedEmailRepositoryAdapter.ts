@@ -6,7 +6,9 @@ import { type FailedEmailRepositoryPort } from '@domain/ports/FailedEmailReposit
 import { type FailedEmail } from '@domain/models/FailedEmail';
 
 export class JsonFailedEmailRepositoryAdapter implements FailedEmailRepositoryPort {
-  private readonly filePath = path.join(cwd(), 'data', 'failed-emails.json');
+  // private readonly filePath = path.join(cwd(), 'data', 'failed-emails.json');
+
+  constructor(private readonly filePath: string = path.join(cwd(), 'data', 'failed-emails.json')) {}
 
   public async save(failure: FailedEmail): Promise<void> {
     const allFailures = await this.findAll();
