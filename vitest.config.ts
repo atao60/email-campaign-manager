@@ -6,6 +6,7 @@ export default defineConfig({
     tsconfigPaths: true
   },
   test: {
+    name: 'backend',
     globals: true, // Allows using describe, it, expect without importing them (optional, but convenient)
     environment: 'node',
     passWithNoTests: true,
@@ -13,7 +14,15 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: ['src/infrastructure/antlr/generated/**', 'node_modules/**', 'dist/**', '**/*.d.ts', '**/index.ts']
+      exclude: [
+        'src/domain/ports/**',
+        'src/domain/models/BrandedTypes.ts',
+        'src/domain/models/QueueMetrics.ts',
+
+        'node_modules/**',
+        'dist/**',
+        '**/*.d.ts'
+      ]
     }
   }
 });

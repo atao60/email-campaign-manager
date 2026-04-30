@@ -15,15 +15,7 @@ We'd like to emphasize these points:
 3. Give Credit
    - If any submissions or contributions are built upon other work (e.g. research papers, open sourced projects, public code), please cite or attach any information about the original source. People should be credited for the work they've done.
 
-### Coding Rules
-
-**_TBD_**
-
-### Commit and Release Guidelines
-
-**_TBD_**
-
-### License
+## License
 
 By contributing to `@atao60/personal-mailing-manager`, you agree that your contributions will be licensed under its [MIT](LICENSE) license.
 
@@ -78,6 +70,34 @@ nvm --version # required only if the installed Node has a lower version than the
 ## Development
 
 **_TBD_**
+
+### Coding Rules
+
+**_TBD_**
+
+### Release Guidelines
+
+**_TBD_**
+
+### Commit Messages
+
+We follow the **Conventional Commits** specification. Please format your commit messages as follows:
+
+`<type>(<scope>): <subject>`
+
+**Types:**
+
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code (white-space, formatting, etc)
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `chore`: Changes to the build process or auxiliary tools
+
+**Example:**
+`feat(compiler): add support for nested repeat loops`
 
 ### Cross Platform Concerns
 
