@@ -1,10 +1,6 @@
 import { type QueueMonitorPort } from '@domain/ports/QueueMonitorPort';
 import { type FailedEmailRepositoryPort } from '@domain/ports/FailedEmailRepositoryPort';
-import { type QueueMetrics } from '@domain/models/QueueMetrics';
-
-export interface CampaignStatus extends QueueMetrics {
-  hardFailures: number;
-}
+import { type CampaignStatus } from '@domain/models/CampaignStatus';
 
 export class GetCampaignStatusUseCase {
   constructor(

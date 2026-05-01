@@ -12,11 +12,14 @@
     "coverage:frontend": "npm run coverage --prefix client",
     "coverage": "npm run coverage:backend && npm run coverage:frontend",
     "prepare": "husky",
+    "prestart:dev:app": "npm run gen:rest:api",
     "start:dev:app": "tsx src/main.ts",
     "watch:dev:app": "tsx watch src/main.ts",
     "dev:smtp": "maildev --web 1080 --smtp 1025",
     "wait:dev:app": "wait-on tcp:1025 tcp:6379 && tsx scripts/check-redis.ts && npm run start:dev:app",
     "start:dev": "concurrently -c \"cyan,yellow,magenta\" -n \"MAIL,REDIS,NODE\" \"npm:dev:smtp\" \"npm:dev:redis\" \"npm:wait:dev:app\"",
+    "start:dev:web": "wait-on tcp:3000 && npm run dev --prefix client",
+    "start:web": "concurrently \"npm:start:dev\" \"npm:start:dev:web\"",
     "build": "tsup",
     "check": "tsc --noEmit",
     "start": "node dist/main.js",
@@ -26,7 +29,8 @@
     "i18n:extract": "i18next-parser --config i18next-parser.config.js",
     "license-check": "license-checker-rseidelsohn --summary",
     "release": "release-it",
-    "dev:redis": "tsx scripts/local-redis.ts"
+    "dev:redis": "tsx scripts/local-redis.ts",
+    "gen:rest:api": "tsoa spec-and-routes --tsconfig tsconfig.json"
   },
   "keywords": [
     "mailing",
@@ -59,6 +63,7 @@
     "nodemailer": "^8.0.5",
     "p-queue": "^9.1.2",
     "pino": "^10.3.1",
+    "tsoa": "^7.0.0-alpha.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

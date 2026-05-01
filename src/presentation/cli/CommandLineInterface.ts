@@ -52,7 +52,7 @@ export async function startCli(container: DiContainer): Promise<void> {
       const html = '<h1>Hello {{firstName}},</h1><p>We are thrilled to have you.</p>';
 
       try {
-        const count = await useCase.execute(csvFile, subject, html);
+        const count = await useCase.execute(csvFile, subject, { html });
 
         outputService.success('cli.commands.sendCampaign.success', { count: count.toString(), file: csvFile });
 

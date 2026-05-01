@@ -5,11 +5,10 @@ import { configureDependencyInjection } from '@config/di.config';
 
 import { DiContainer } from '@infrastructure/di/DiContainer';
 import { startCli } from '@presentation/cli/CommandLineInterface';
-import { startRestApi } from '@presentation/rest/ExpressApi';
+import { startRestServer } from '@presentation/rest/RestServer';
 import { INFRA_TYPES } from '@infrastructure/di/Types';
 
 async function bootstrap() {
-
   configureDependencyInjection();
   const container = DiContainer.getInstance();
 
@@ -30,7 +29,7 @@ async function bootstrap() {
     log('Background Email Worker started.');
 
     // Start REST API in background
-    startRestApi(container);
+    startRestServer(container);
 
     log('App running in server mode. Use CLI arguments to trigger specific commands.');
   }

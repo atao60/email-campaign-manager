@@ -1,11 +1,13 @@
-# Simple Mailing Manager from command line
+# Simple Mailing Manager
 
 ## 💡 Rational
 
-Small command-line application to launch mailings from address lists stored in text files.
+Small application to launch mailing campaigns from address lists stored in text files.
 No more need for Gmail, Outlook, Thunderbird, or other email clients.
 
 Work with any SMTP server such as Gmail one. Will use `Maildev` in dev mode.
+
+It provides several interfaces: programming, REST, CLI. And a web client.
 
 ## 🏁 Quickstart
 
@@ -15,16 +17,55 @@ From a first console:
 npm run start:dev
 ```
 
-From a second console:
+Let's start with the CLI interface.
+
+From a second console, go to the project root, then:
 
 ```bash
+### Merge two lists
 npx tsx src/main.ts merge data/merged.csv data/listA.csv data/listB.csv
 
+### Launch a mailing campaign based on this list
 npx tsx src/main.ts send-campaign data/merged.csv
 
 ```
 
-To check the sent emails, with a browser go to [Maildev Report UI](http://localhost:1080).
+To check the sent emails: with a browser go to [Maildev Report UI](http://localhost:1080).
+
+It is also possible to send REST requests. Here no need to go to the project root:
+
+```bash
+### Check the server.
+curl -w "\n" http://localhost:3000/health
+
+### Merge two lists
+curl -w "\n" -X POST http://localhost:3000/campaigns/merge \
+     -H "Content-Type: application/json" \
+     -d '{"inputs": ["./data/listA.csv", "./data/listB.csv"], "output": "./data/merged.csv"}'
+
+### Launch a mailing campaign based on this list
+curl -w "\n" -X POST http://localhost:3000/campaigns/send-campaign \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contactsFilePath": "./data/merged.csv",
+    "subject": "Welcome to our Newsletter!",
+    "templateHtml": "<h1>Hello {{firstName}}!</h1><p>Thanks for joining us.</p>"
+  }'
+
+### Check emails sending
+curl -w "\n" http://localhost:3000/api/status
+
+```
+
+Or to use the WEB client. Go to the project root, then:
+
+```bash
+
+cd client && npm run dev
+
+```
+
+With a browser go to [application client](http://localhost:5173).
 
 ## 🛠️ Development
 

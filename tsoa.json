@@ -1,0 +1,27 @@
+{
+  "entryFile": "src/presentation/rest/RestServer.ts",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@domain/*": ["src/domain/*"],
+      "@application/*": ["src/application/*"],
+      "@infrastructure/*": ["src/infrastructure/*"],
+      "@presentation/*": ["src/presentation/*"]
+    }
+  },
+  "routes": {
+    "routesDir": "src/presentation/rest/generated",
+    "iocModule": "src/infrastructure/di/tsoa-ioc",
+    "basePath": ""
+  },
+  "controllerPathGlobs": ["src/presentation/rest/controllers/**/*.ts"],
+  "spec": {
+    "outputDirectory": "dist",
+    "specVersion": 3,
+    "info": {
+      "title": "Email Campaign Manager API",
+      "version": "1.0.0"
+    },
+    "noImplicitAdditionalProperties": "throw-on-extras"
+  }
+}

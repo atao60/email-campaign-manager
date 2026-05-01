@@ -20,6 +20,8 @@
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "lib": ["es2023"],
     "outDir": "./dist",
     "rootDir": "./src",

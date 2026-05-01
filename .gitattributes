@@ -1,0 +1,60 @@
+# -------------------------------------------------------------------
+# 1. Line Endings
+# -------------------------------------------------------------------
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Enforce Unix line endings (LF) for all text files to keep Prettier happy
+* text=auto eol=lf
+
+# Enforce Unix line endings (LF) for all text files to keep Prettier happy
+* text=auto eol=lf
+
+# Force Windows batch scripts to always use CRLF line endings.
+*.cmd text eol=crlf
+*.CMD text eol=crlf
+*.bat text eol=crlf
+*.BAT text eol=crlf
+
+# iCalendar files require CRLF per RFC 5545
+*.ics text eol=crlf
+*.ICS text eol=crlf
+
+# For PowerShell:
+*.ps1      text eol=crlf
+*.ps1x     text eol=crlf
+*.psm1     text eol=crlf
+*.psd1     text eol=crlf
+*.ps1xml   text eol=crlf
+*.pssc     text eol=crlf
+*.psrc     text eol=crlf
+*.cdxml    text eol=crlf
+
+# -------------------------------------------------------------------
+# 2. Better PR Diffs (Linguist)
+# -------------------------------------------------------------------
+
+# Fix syntax highlighting on GitHub to allow comments
+.vscode/*.json linguist-language=JSON-with-Comments
+
+# Hide massive lock files from PR diffs by default
+package-lock.json linguist-generated
+client/package-lock.json linguist-generated
+
+# Hide build output and coverage reports if they are accidentally committed
+dist/** linguist-generated
+client/dist/** linguist-generated
+coverage/** linguist-generated
+
+# -------------------------------------------------------------------
+# 3. Binary Files
+# -------------------------------------------------------------------
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+
+# Treat SVGs as text so you can track path changes in code
+*.svg text
