@@ -1,4 +1,6 @@
+import type { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
 import type { GetCampaignStatusUseCase } from '@application/usecases/GetCampaignStatusUseCase';
+import type { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
 import type { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
 import type { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
 import type { CsvPort } from '@domain/ports/CsvPort';
@@ -29,7 +31,9 @@ export const DI_TYPES = {
   // Use Cases
   MergeMailingListsUseCase: 'MergeMailingListsUseCase',
   SendCampaignUseCase: 'SendCampaignUseCase',
-  GetCampaignStatusUseCase: 'GetCampaignStatusUseCase'
+  GetCampaignStatusUseCase: 'GetCampaignStatusUseCase',
+  GetCampaignsUseCase: 'GetCampaignsUseCase',
+  GetCampaignDetailsUseCase: 'GetCampaignDetailsUseCase'
 } as const;
 
 /**
@@ -80,6 +84,8 @@ export interface AppDependencies {
   [DI_TYPES.MergeMailingListsUseCase]: MergeMailingListsUseCase;
   [DI_TYPES.SendCampaignUseCase]: SendCampaignUseCase;
   [DI_TYPES.GetCampaignStatusUseCase]: GetCampaignStatusUseCase;
+  [DI_TYPES.GetCampaignsUseCase]: GetCampaignsUseCase;
+  [DI_TYPES.GetCampaignDetailsUseCase]: GetCampaignDetailsUseCase;
 
   [PRESENTATION_TYPES.CliOutputService]: CliOutputService;
 }

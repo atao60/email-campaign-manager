@@ -23,7 +23,9 @@ export const iocContainer = {
       case 'CampaignController':
         return new CampaignController(
           appContainer.resolve(DI_TYPES.MergeMailingListsUseCase),
-          appContainer.resolve(DI_TYPES.SendCampaignUseCase)
+          appContainer.resolve(DI_TYPES.SendCampaignUseCase),
+          appContainer.resolve(DI_TYPES.GetCampaignsUseCase),
+          appContainer.resolve(DI_TYPES.GetCampaignDetailsUseCase)
         ) as T;
 
       default:

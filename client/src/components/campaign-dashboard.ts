@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
-import { apiClient, type CampaignStatus } from './api-client';
+import { apiClient, type CampaignStatus } from '../api-client';
 
 @customElement('campaign-dashboard')
 export class CampaignDashboard extends LitElement {

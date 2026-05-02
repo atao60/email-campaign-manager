@@ -1,7 +1,9 @@
-import { Route, Post, Body, Controller, SuccessResponse, Res, type TsoaResponse } from 'tsoa';
+import { Route, Post, Body, Controller, SuccessResponse, Res, type TsoaResponse, Get, Path } from 'tsoa';
 
 import { type MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
 import type { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
+import type { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
+import type { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
 
 interface MergePayload {
   inputs: string[];
@@ -23,11 +25,32 @@ export interface SendCampaignHtmlTemplateUrlPayload extends BaseSendCampaignPayl
 
 export type SendCampaignPayload = SendCampaignHtmlTemplatePayload | SendCampaignHtmlTemplateUrlPayload;
 
+export interface CampaignSummary {
+  id: string;
+  subject: string;
+  sentDate: string; // ISO string format
+  totalSent: number;
+  status: 'COMPLETED' | 'FAILED' | 'PARTIAL';
+}
+
+export interface EmailDeliveryStatus {
+  address: string;
+  status: 'OK' | 'FAILED' | 'PENDING';
+  errorReason?: string; // Optional, only if failed
+}
+
+export interface CampaignDetail extends CampaignSummary {
+  htmlContent: string;
+  emails: EmailDeliveryStatus[];
+}
+
 @Route('campaigns')
 export class CampaignController extends Controller {
   constructor(
     private readonly mergeUseCase: MergeMailingListsUseCase,
-    private readonly sendCampaignUseCase: SendCampaignUseCase
+    private readonly sendCampaignUseCase: SendCampaignUseCase,
+    private readonly getCampaignsUseCase: GetCampaignsUseCase,
+    private readonly getCampaignDetailsUseCase: GetCampaignDetailsUseCase
   ) {
     super();
   }
@@ -89,6 +112,43 @@ export class CampaignController extends Controller {
     } catch (error: unknown) {
       console.error(`Send campaign error:`, error);
       return serverError(500, { error: 'Internal Server Error while queueing campaign.' });
+    }
+  }
+
+  /**
+   * Retrieves a high-level list of all processed campaigns.
+   */
+  @Get('/')
+  public async getCampaigns(@Res() serverError: TsoaResponse<500, { error: string }>): Promise<CampaignSummary[]> {
+    try {
+      return await this.getCampaignsUseCase.execute();
+    } catch (error) {
+      console.error(`Failed to fetch campaigns:`, error);
+      return serverError(500, { error: 'Internal Server Error while fetching campaigns.' });
+    }
+  }
+
+  /**
+   * Retrieves the full details of a specific campaign, including HTML content and email statuses.
+   * @param campaignId The unique identifier of the campaign
+   */
+  @Get('{campaignId}')
+  public async getCampaignDetails(
+    @Path() campaignId: string,
+    @Res() notFoundError: TsoaResponse<404, { error: string }>,
+    @Res() serverError: TsoaResponse<500, { error: string }>
+  ): Promise<CampaignDetail> {
+    try {
+      const campaignDetail = await this.getCampaignDetailsUseCase.execute(campaignId);
+
+      if (!campaignDetail) {
+        return notFoundError(404, { error: `Campaign with ID ${campaignId} not found.` });
+      }
+
+      return campaignDetail;
+    } catch (error) {
+      console.error(`Failed to fetch details for campaign ${campaignId}:`, error);
+      return serverError(500, { error: 'Internal Server Error while fetching campaign details.' });
     }
   }
 }
