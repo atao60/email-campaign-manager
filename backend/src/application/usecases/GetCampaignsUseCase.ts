@@ -2,8 +2,9 @@ import { type CampaignSummary } from '@presentation/rest/controllers/CampaignCon
 // import { type CampaignRepositoryPort } from '@domain/ports/CampaignRepositoryPort';
 
 export class GetCampaignsUseCase {
-  constructor() // private readonly campaignRepo: CampaignRepositoryPort
-  {}
+  constructor() {
+    // private readonly campaignRepo: CampaignRepositoryPort
+  }
 
   public async execute(): Promise<CampaignSummary[]> {
     // TODO: Fetch from your DB/Redis

@@ -1,0 +1,90 @@
+{
+  "name": "@campaign-manager/backend",
+  "version": "0.0.5",
+  "description": "Email Campaign Manager - CLI and REST APIs backend",
+  "main": "./dist/index.cjs",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "npm test -- --coverage",
+    "prestart:dev:app": "npm run gen:rest:api",
+    "start:dev:app": "tsx src/main.ts",
+    "watch:dev:app": "tsx watch src/main.ts",
+    "dev:smtp": "maildev --web 1080 --smtp 1025",
+    "wait:dev:app": "wait-on tcp:1025 tcp:6379 && tsx scripts/check-redis.ts && npm run start:dev:app",
+    "start:dev": "concurrently -c \"cyan,yellow,magenta\" -n \"MAIL,REDIS,NODE\" \"npm:dev:smtp\" \"npm:dev:redis\" \"npm:wait:dev:app\"",
+    "prebuild": "npm run gen:rest:api",
+    "build": "tsup",
+    "check": "tsc --noEmit",
+    "start": "node dist/main.js",
+    "lint": "eslint .",
+    "build:debug": "npx tsup --watch --onSuccess \"node --inspect dist/main.js\"",
+    "i18n:extract": "i18next-parser --config i18next-parser.config.js",
+    "license-check": "license-checker-rseidelsohn --summary",
+    "dev:redis": "tsx scripts/local-redis.ts",
+    "gen:rest:api": "tsoa spec-and-routes --tsconfig tsconfig.json"
+  },
+  "type": "module",
+  "dependencies": {
+    "bullmq": "^5.76.2",
+    "commander": "^14.0.3",
+    "cors": "^2.8.6",
+    "csv-parse": "^6.2.1",
+    "csv-parser": "^3.2.0",
+    "csv-stringify": "^6.7.0",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "i18next": "^26.0.6",
+    "i18next-fs-backend": "^2.6.4",
+    "ioredis": "^5.10.1",
+    "nodemailer": "^8.0.5",
+    "p-queue": "^9.1.2",
+    "pino": "^10.3.1",
+    "tsoa": "^7.0.0-alpha.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.0",
+    "@types/nodemailer": "^8.0.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "concurrently": "^9.2.1",
+    "i18next-cli": "^1.56.2",
+    "license-checker-rseidelsohn": "^4.4.2",
+    "maildev": "^2.2.1",
+    "redis-memory-server": "^0.16.1",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "vite": "^8.0.9",
+    "vitest": "^4.1.5",
+    "wait-on": "^9.0.5"
+  },
+  "overrides": {
+    "maildev": {
+      "nodemailer": "^8.0.5"
+    },
+    "undici": "^6.24.0"
+  },
+  "engines": {
+    "node": ">=24.12.0",
+    "npm": ">=11.6.2"
+  },
+  "private": true,
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atao60/personal-mailing-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atao60/personal-mailing-manager/issues"
+  },
+  "homepage": "https://github.com/atao60/personal-mailing-manager#readme"
+}

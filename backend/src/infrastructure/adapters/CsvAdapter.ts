@@ -9,7 +9,7 @@ export class CsvAdapter implements CsvPort {
   public async read(filePath: string): Promise<Contact[]> {
     return new Promise((resolve, reject) => {
       const results: Contact[] = [];
-      
+
       fs.createReadStream(filePath)
         .pipe(csvParser())
         .on('data', (data) => {

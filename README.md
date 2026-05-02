@@ -57,15 +57,15 @@ curl -w "\n" http://localhost:3000/api/status
 
 ```
 
-Or to use the WEB client. Go to the project root, then:
+Or to use the WEB client:
 
 ```bash
 
-cd client && npm run dev
+run start:dev -w @campaign-manager/client
 
 ```
 
-With a browser go to [application client](http://localhost:5173).
+Then with a browser go to [application client](http://localhost:5173).
 
 ## 🛠️ Development
 

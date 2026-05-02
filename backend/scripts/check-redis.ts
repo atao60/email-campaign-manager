@@ -4,7 +4,7 @@ import process from 'node:process';
 const redis = new Redis({
   host: 'localhost',
   port: 6379,
-  maxRetriesPerRequest: 1,
+  maxRetriesPerRequest: 1
 });
 
 async function checkRedis() {

@@ -2,8 +2,9 @@ import { type CampaignDetail } from '@presentation/rest/controllers/CampaignCont
 // import { type CampaignRepositoryPort } from '@domain/ports/CampaignRepositoryPort';
 
 export class GetCampaignDetailsUseCase {
-  constructor() // private readonly campaignRepo: CampaignRepositoryPort
-  {}
+  constructor() {
+    // private readonly campaignRepo: CampaignRepositoryPort
+  }
 
   public async execute(campaignId: string): Promise<CampaignDetail | null> {
     // TODO: Fetch specific campaign details and related emails from DB/Redis

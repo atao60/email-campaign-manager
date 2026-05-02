@@ -8,14 +8,7 @@ export class Contact {
   public readonly jobTitle?: string;
   public readonly company?: string;
 
-  constructor(
-    id: ContactId,
-    firstName: string,
-    lastName: string,
-    email: string,
-    jobTitle?: string,
-    company?: string
-  ) {
+  constructor(id: ContactId, firstName: string, lastName: string, email: string, jobTitle?: string, company?: string) {
     this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;

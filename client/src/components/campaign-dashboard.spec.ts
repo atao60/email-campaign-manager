@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 import { CampaignDashboard } from './campaign-dashboard'; // Imports and registers <campaign-dashboard>
-import { apiClient } from './api-client';
+import { apiClient } from '../api-client';
 
 // Mock the API client module entirely
-vi.mock('./api-client', () => ({
+vi.mock('../api-client', () => ({
   apiClient: {
     getStatus: vi.fn()
   }
