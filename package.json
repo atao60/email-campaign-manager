@@ -42,6 +42,8 @@
   "license": "MIT",
   "keywords": [
     "mailing",
+    "email",
+    "campaign",
     "typescript",
     "DDD",
     "hexagonal",

@@ -1,10 +1,12 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
+import type { CampaignDetail, CampaignSummary } from '@campaign-manager/backend';
+
 @customElement('campaign-history')
 export class CampaignHistory extends LitElement {
-  @state() private campaigns: any[] = [];
-  @state() private selectedCampaign: any | null = null;
+  @state() private campaigns: CampaignSummary[] = [];
+  @state() private selectedCampaign: CampaignDetail | null = null;
   @state() private loading = true;
 
   static readonly styles = css`
@@ -133,6 +135,15 @@ export class CampaignHistory extends LitElement {
 
   renderDetails() {
     const c = this.selectedCampaign;
+
+    if (!c) {
+      return html`
+        <div class="empty-state">
+          <p>Please select a campaign to view its details.</p>
+        </div>
+      `;
+    }
+
     return html`
       <button class="back" @click=${() => (this.selectedCampaign = null)}>← Back to List</button>
       <h2>${c.subject}</h2>
