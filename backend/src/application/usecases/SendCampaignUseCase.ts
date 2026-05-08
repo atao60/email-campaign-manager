@@ -1,4 +1,3 @@
-// src/application/usecases/SendCampaignUseCase.ts
 import { type EmailPort } from '@domain/ports/EmailPort';
 import { type CsvPort } from '@domain/ports/CsvPort';
 import { type LoggerPort } from '@domain/ports/LoggerPort';

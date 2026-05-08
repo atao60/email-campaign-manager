@@ -1,7 +1,10 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
-import type { CampaignDetail, CampaignSummary } from '@campaign-manager/backend';
+import type { CampaignDetail, CampaignSummary, EmailDeliveryStatus } from '@campaign-manager/backend';
+import { apiClient } from '../api-client';
+
+import styles from './campaign-history.scss' with { type: 'css' };
 
 @customElement('campaign-history')
 export class CampaignHistory extends LitElement {
@@ -9,80 +12,7 @@ export class CampaignHistory extends LitElement {
   @state() private selectedCampaign: CampaignDetail | null = null;
   @state() private loading = true;
 
-  static readonly styles = css`
-    :host {
-      display: block;
-    }
-    h2 {
-      color: #2c3e50;
-    }
-    .card {
-      background: white;
-      border: 1px solid #e2e8f0;
-      padding: 1.5rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      cursor: pointer;
-      transition: shadow 0.2s;
-    }
-    .card:hover {
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      border-color: #cbd5e1;
-    }
-
-    .status-badge {
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      font-weight: bold;
-    }
-    .badge-ok {
-      background: #dcfce7;
-      color: #166534;
-    }
-    .badge-fail {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    button.back {
-      background: #f1f5f9;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-bottom: 1rem;
-    }
-    button.back:hover {
-      background: #e2e8f0;
-    }
-
-    iframe {
-      width: 100%;
-      height: 400px;
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      margin: 1rem 0;
-      background: white;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      background: white;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-    }
-    li {
-      padding: 1rem;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      justify-content: space-between;
-    }
-    li:last-child {
-      border-bottom: none;
-    }
-  `;
+  static readonly styles = styles;
 
   connectedCallback() {
     super.connectedCallback();
@@ -92,8 +22,7 @@ export class CampaignHistory extends LitElement {
   async fetchCampaigns() {
     this.loading = true;
     try {
-      const response = await fetch('/api/campaigns');
-      this.campaigns = await response.json();
+      this.campaigns = await apiClient.getCampaigns();
     } catch (e) {
       console.error('Failed to fetch campaigns', e);
     } finally {
@@ -104,8 +33,7 @@ export class CampaignHistory extends LitElement {
   async loadDetails(campaignId: string) {
     this.loading = true;
     try {
-      const response = await fetch(`/api/campaigns/${campaignId}`);
-      this.selectedCampaign = await response.json();
+      this.selectedCampaign = await apiClient.getCampaignDetails(campaignId);
     } catch (e) {
       console.error('Failed to fetch details', e);
     } finally {
@@ -154,7 +82,7 @@ export class CampaignHistory extends LitElement {
       <h3>Delivery Status (${c.totalSent} total)</h3>
       <ul>
         ${c.emails.map(
-          (email: any) => html`
+          (email: EmailDeliveryStatus) => html`
             <li>
               <span>${email.address}</span>
               <span class="status-badge ${email.status === 'OK' ? 'badge-ok' : 'badge-fail'}">

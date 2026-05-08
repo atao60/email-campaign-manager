@@ -38,6 +38,6 @@ export default [
 
   // Global ignores (replaces the old .eslintignore file)
   {
-    ignores: ['dist/', 'node_modules/', '**/*.d.ts']
+    ignores: ['dist/', 'node_modules/', '**/*.d.ts', '**/coverage/', '**/generated/']
   }
 ];

@@ -19,6 +19,9 @@
     "coverage:web": "npm run coverage -w @campaign-manager/client",
     "coverage": "npm run coverage:backend && npm run coverage:web",
     "format": "prettier --write .",
+    "build:backend": "npm run build -w @campaign-manager/backend",
+    "build:web": "npm run build -w @campaign-manager/client",
+    "build": "concurrently \"npm run build:backend\" \"npm run build:web\"",
     "release": "release-it"
   },
   "devDependencies": {
@@ -53,5 +56,14 @@
     "REST",
     "WEB",
     "SPA"
-  ]
+  ],
+  "overrides": {
+    "vite-plugin-lit-css": {
+      "vite": "^8.0.10"
+    },
+    "maildev": {
+      "nodemailer": "^8.0.5"
+    },
+    "glob": "^13.0.0"
+  }
 }

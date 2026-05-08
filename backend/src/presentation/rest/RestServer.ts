@@ -26,6 +26,15 @@ export function startRestServer(container: DiContainer): void {
   // we never know...
   app.use(urlencoded({ extended: true }));
 
+  // 🛑 TESTS
+  // Put this right before your routes are registered!
+  app.use((req, res, next) => {
+    if (!req.originalUrl.includes('/api/status')) {
+      console.log(`📡 [INCOMING REQUEST] ${req.method} ${req.originalUrl}`);
+    }
+    next(); // Pass control to the next middleware/router
+  });
+
   // Let tsoa handle all the routing logic
   RegisterRoutes(app);
 

@@ -1,3 +1,5 @@
+import type { IocContainer, ServiceIdentifier } from '@tsoa/runtime';
+
 import { type DiContainer } from './DiContainer';
 import { DI_TYPES } from './Types';
 import { CampaignController } from '@presentation/rest/controllers/CampaignController';
@@ -11,9 +13,27 @@ export const setContainer = (container: DiContainer) => {
   appContainer = container;
 };
 
-export const iocContainer = {
-  get: <T>(controller: { name: string }): T => {
-    switch (controller.name) {
+/**
+ * The controllers are registered here, not in {@link DiContainer}.
+ * DiContainer only holds the Use Cases.
+ */
+export const iocContainer: IocContainer = {
+  get: <T>(controller: ServiceIdentifier<T>): T => {
+    let identifierName: string;
+
+    if (typeof controller === 'string') {
+      // It's already a string identifier
+      identifierName = controller;
+    } else if (typeof controller === 'symbol') {
+      // Convert symbol to string if your DI container needs a string
+      identifierName = controller.toString();
+    } else {
+      // If it's not a string or symbol, it is the actual class constructor
+      // (e.g., CampaignController), so it is 100% safe to read `.name`
+      identifierName = controller.name;
+    }
+
+    switch (identifierName) {
       case 'HealthController':
         return new HealthController() as T;
 
@@ -29,7 +49,7 @@ export const iocContainer = {
         ) as T;
 
       default:
-        throw new Error(`Controller ${controller.name} not registered in IoC bridge.`);
+        throw new Error(`Controller ${identifierName} not registered in IoC bridge.`);
     }
   }
 };

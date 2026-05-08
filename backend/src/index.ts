@@ -1,1 +1,6 @@
-export type { CampaignSummary, CampaignDetail } from './presentation/rest/controllers/CampaignController';
+export type {
+  CampaignSummary,
+  CampaignDetail,
+  EmailDeliveryStatus,
+  LaunchCampaignResponse
+} from './presentation/rest/dto/CampaignDTO';

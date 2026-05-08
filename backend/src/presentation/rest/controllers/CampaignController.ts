@@ -1,6 +1,22 @@
-import { Route, Post, Body, Controller, SuccessResponse, Res, type TsoaResponse, Get, Path } from 'tsoa';
+import {
+  Route,
+  Post,
+  Body,
+  Controller,
+  SuccessResponse,
+  Res,
+  type TsoaResponse,
+  Get,
+  Path,
+  UploadedFile,
+  FormField
+} from 'tsoa';
+import { join } from 'node:path';
+import { cwd } from 'node:process';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 
-import { type MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
+import type { CampaignSummary, CampaignDetail, LaunchCampaignResponse } from '../dto/CampaignDTO';
+import type { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
 import type { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
 import type { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
 import type { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
@@ -25,34 +41,24 @@ export interface SendCampaignHtmlTemplateUrlPayload extends BaseSendCampaignPayl
 
 export type SendCampaignPayload = SendCampaignHtmlTemplatePayload | SendCampaignHtmlTemplateUrlPayload;
 
-export interface CampaignSummary {
-  id: string;
-  subject: string;
-  sentDate: string; // ISO string format
-  totalSent: number;
-  status: 'COMPLETED' | 'FAILED' | 'PARTIAL';
-}
-
-export interface EmailDeliveryStatus {
-  address: string;
-  status: 'OK' | 'FAILED' | 'PENDING';
-  errorReason?: string; // Optional, only if failed
-}
-
-export interface CampaignDetail extends CampaignSummary {
-  htmlContent: string;
-  emails: EmailDeliveryStatus[];
-}
-
 @Route('campaigns')
 export class CampaignController extends Controller {
+  private readonly mergeUseCase: MergeMailingListsUseCase;
+  private readonly sendCampaignUseCase: SendCampaignUseCase;
+  private readonly getCampaignsUseCase: GetCampaignsUseCase;
+  private readonly getCampaignDetailsUseCase: GetCampaignDetailsUseCase;
+
   constructor(
-    private readonly mergeUseCase: MergeMailingListsUseCase,
-    private readonly sendCampaignUseCase: SendCampaignUseCase,
-    private readonly getCampaignsUseCase: GetCampaignsUseCase,
-    private readonly getCampaignDetailsUseCase: GetCampaignDetailsUseCase
+    mergeUseCase: MergeMailingListsUseCase,
+    sendCampaignUseCase: SendCampaignUseCase,
+    getCampaignsUseCase: GetCampaignsUseCase,
+    getCampaignDetailsUseCase: GetCampaignDetailsUseCase
   ) {
     super();
+    this.mergeUseCase = mergeUseCase;
+    this.sendCampaignUseCase = sendCampaignUseCase;
+    this.getCampaignsUseCase = getCampaignsUseCase;
+    this.getCampaignDetailsUseCase = getCampaignDetailsUseCase;
   }
 
   @Post('merge')
@@ -70,47 +76,61 @@ export class CampaignController extends Controller {
     }
   }
 
-  @Post('send-campaign')
-  @SuccessResponse('202', 'Accepted')
-  public async sendCampaign(
-    @Body() requestBody: SendCampaignPayload,
+  @Post('send')
+  public async launchCampaign(
+    // ==========================================
+    // 1. RESPONDERS (Outputs - Required)
+    // ==========================================
     @Res() serverError: TsoaResponse<500, { error: string }>,
-    @Res() validationError: TsoaResponse<400, { error: string }>
-  ): Promise<{ message: string; processed?: number }> {
+    @Res() validationError: TsoaResponse<400, { error: string }>,
+    @Res() acceptedResponse: TsoaResponse<202, LaunchCampaignResponse>,
+
+    // ==========================================
+    // 2. FORM DATA (Inputs - Required first, Optional last)
+    // ==========================================
+    @UploadedFile() contactsCsv: Express.Multer.File,
+    @FormField() subject: string,
+    @FormField() templateHtml?: string,
+    @FormField() templateUrl?: string
+  ) {
     try {
+      console.log('CampaignController.launchCampaign starting');
+      // 🛑 TEST:
+      console.log('🚨 [CONTROLLER HIT] The frontend successfully reached launchCampaign!');
+      console.log('Subject received:', subject);
+      console.log('File received:', contactsCsv ? 'Yes' : 'No');
       let finalHtmlContent: string;
 
-      // Resolve the HTML content
-      if ('templateHtml' in requestBody && requestBody.templateHtml) {
-        finalHtmlContent = requestBody.templateHtml;
-      } else if ('templateHtmlUrl' in requestBody && requestBody.templateHtmlUrl) {
-        // You have two choices here:
-        // Choice A: Fetch the HTML string right here in the controller
-        // finalHtmlContent = await fetch(requestBody.templateHtmlUrl).then(res => res.text());
-
-        // Choice B (Recommended): Update your Use Case to accept the URL and let the backend handle the fetching.
-        // For now, we'll throw an error if your use case isn't ready for URLs yet.
+      if (templateHtml) {
+        finalHtmlContent = templateHtml;
+      } else if (templateUrl) {
         return validationError(400, { error: 'URL fetching is not yet implemented.' });
       } else {
-        // Fallback safety net (though tsoa should catch this automatically)
-        return validationError(400, { error: 'Must provide either templateHtml or templateHtmlUrl' });
+        return validationError(400, { error: 'Must provide either templateHtml or templateUrl' });
       }
 
-      // Execute the business logic
-      const processedCount = await this.sendCampaignUseCase.execute(
-        requestBody.contactsFilePath,
-        requestBody.subject,
-        { html: finalHtmlContent } //requestBody.templateHtml
-      );
+      // 2. Handle the uploaded file
+      // Because your use case expects a file path, we must temporarily write the uploaded buffer to disk.
+      // (Make sure to import * as fs from 'fs' and * as path from 'path' at the top of your file)
+      const tmpDir = join(cwd(), 'tmp');
+      if (!existsSync(tmpDir)) {
+        mkdirSync(tmpDir, { recursive: true });
+      }
+      const tempFilePath = join(tmpDir, `upload-${Date.now()}.csv`);
+      writeFileSync(tempFilePath, contactsCsv.buffer);
 
-      // 202 status implies the request is accepted and processing in the background
-      this.setStatus(202);
-      return {
-        message: `Campaign for ${requestBody.subject} has been queued for sending.`,
+      // 3. Execute the business logic using the temporary file path
+      const processedCount = await this.sendCampaignUseCase.execute(tempFilePath, subject, { html: finalHtmlContent });
+
+      // (Optional but recommended) Clean up the temp file after the queue accepts it
+      // fs.unlinkSync(tempFilePath);
+
+      return acceptedResponse(202, {
+        message: `Campaign for ${subject} has been queued for sending.`,
         processed: processedCount
-      };
+      });
     } catch (error: unknown) {
-      console.error(`Send campaign error:`, error);
+      console.error(`Launch campaign error:`, error);
       return serverError(500, { error: 'Internal Server Error while queueing campaign.' });
     }
   }

@@ -1,7 +1,11 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
 import { apiClient, type CampaignStatus } from '../api-client';
+
+import styles from './campaign-dashboard.scss' with { type: 'css' };
+
+const POLL_FREQUENCY = 3000; // in ms
 
 @customElement('campaign-dashboard')
 export class CampaignDashboard extends LitElement {
@@ -13,72 +17,12 @@ export class CampaignDashboard extends LitElement {
 
   private pollInterval: ReturnType<typeof setInterval> | null = null;
 
-  static readonly styles = css`
-    :host {
-      display: block;
-      font-family:
-        system-ui,
-        -apple-system,
-        sans-serif;
-      max-width: 600px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      color: #333;
-    }
-    h1 {
-      margin-top: 0;
-      color: #1a1a1a;
-      border-bottom: 2px solid #eaeaea;
-      padding-bottom: 0.5rem;
-    }
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-    .metric-card {
-      background: #f8f9fa;
-      padding: 1rem;
-      border-radius: 6px;
-      border: 1px solid #e9ecef;
-    }
-    .metric-value {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #0056b3;
-      margin: 0.5rem 0 0 0;
-    }
-    .metric-label {
-      font-size: 0.875rem;
-      color: #6c757d;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .error {
-      color: #dc3545;
-      background: #f8d7da;
-      padding: 1rem;
-      border-radius: 4px;
-    }
-    .hard-failures {
-      grid-column: span 2;
-      background: #fff3f3;
-      border-color: #ffc9c9;
-    }
-    .hard-failures .metric-value {
-      color: #dc3545;
-    }
-  `;
+  static readonly styles = styles;
 
   connectedCallback() {
     super.connectedCallback();
     this.fetchStatus();
-    // Poll the REST API every 3 seconds
-    this.pollInterval = setInterval(() => this.fetchStatus(), 3000);
+    this.pollInterval = setInterval(() => this.fetchStatus(), POLL_FREQUENCY);
   }
 
   disconnectedCallback() {

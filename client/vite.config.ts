@@ -1,7 +1,9 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vitest/config';
+import litCss from 'vite-plugin-lit-css';
 
 export default defineConfig({
+  plugins: [litCss({ include: '**/*.scss' })],
   resolve: {
     tsconfigPaths: true
   },

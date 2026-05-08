@@ -3,6 +3,9 @@ import Redis from 'ioredis';
 import { DiContainer } from '@infrastructure/di/DiContainer';
 import { DI_TYPES, INFRA_TYPES, PRESENTATION_TYPES } from '@infrastructure/di/Types';
 
+import type { EmailPort } from '@domain/ports/EmailPort';
+import { EmailWorker } from '@infrastructure/workers/EmailWorker';
+
 // Adapters
 import { ConsoleLogger } from '@infrastructure/services/ConsoleLogger'; // Assuming a basic logger
 import { I18nextLanguageAdapter } from '@infrastructure/adapters/I18nextLanguageAdapter';
@@ -10,7 +13,7 @@ import { NodemailerAdapter } from '@infrastructure/adapters/NodemailerAdapter';
 import { CsvAdapter } from '@infrastructure/adapters/CsvAdapter';
 import { RedisEmailQueueAdapter } from '@infrastructure/adapters/RedisEmailQueueAdapter';
 import { JsonFailedEmailRepositoryAdapter } from '@infrastructure/adapters/JsonFailedEmailRepositoryAdapter';
-import { EmailWorker } from '@infrastructure/workers/EmailWorker';
+import { BullMqMonitorAdapter } from '@infrastructure/adapters/BullMqMonitorAdapter';
 
 // Use Cases
 import { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
@@ -18,8 +21,8 @@ import { MergeMailingListsUseCase } from '@application/usecases/MergeMailingList
 // Presentation
 import { CliOutputService } from '@presentation/cli/services/CliOutputService';
 import { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
-import type { EmailPort } from '@domain/ports/EmailPort';
-import { BullMqMonitorAdapter } from '@infrastructure/adapters/BullMqMonitorAdapter';
+import { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
+import { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
 import { GetCampaignStatusUseCase } from '@application/usecases/GetCampaignStatusUseCase';
 
 interface InfraDependencies {
@@ -82,6 +85,10 @@ export function configureDependencyInjection(): void {
     (c) =>
       new SendCampaignUseCase(c.resolve(DI_TYPES.CsvPort), c.resolve(DI_TYPES.EmailPort), c.resolve(DI_TYPES.Logger))
   );
+
+  container.registerSingleton(DI_TYPES.GetCampaignsUseCase, () => new GetCampaignsUseCase());
+
+  container.registerSingleton(DI_TYPES.GetCampaignDetailsUseCase, () => new GetCampaignDetailsUseCase());
 
   container.registerSingleton(
     DI_TYPES.GetCampaignStatusUseCase,

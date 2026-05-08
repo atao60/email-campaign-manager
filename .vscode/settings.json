@@ -1,4 +1,22 @@
 {
-  "cSpell.words": ["atao", "Aucun", "bullmq", "enregistré", "maildev", "plusieurs", "thèse", "Tsoa", "usecases"],
+  "cSpell.words": [
+    "atao",
+    "attente",
+    "Aucun",
+    "bullmq",
+    "cours",
+    "Échecs",
+    "enregistré",
+    "maildev",
+    "plusieurs",
+    "Sveltekit",
+    "Terminés",
+    "thèse",
+    "Tsoa",
+    "usecases",
+    "Vite",
+    "vitepress",
+    "vuepress"
+  ],
   "typescript.tsdk": "node_modules/typescript/lib"
 }

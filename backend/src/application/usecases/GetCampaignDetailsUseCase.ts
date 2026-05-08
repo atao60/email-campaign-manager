@@ -1,4 +1,4 @@
-import { type CampaignDetail } from '@presentation/rest/controllers/CampaignController';
+import type { CampaignDetail } from '@presentation/rest/dto/CampaignDTO';
 // import { type CampaignRepositoryPort } from '@domain/ports/CampaignRepositoryPort';
 
 export class GetCampaignDetailsUseCase {
