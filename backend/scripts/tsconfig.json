@@ -5,7 +5,9 @@
     "lib": ["ESNext"],
     "types": ["node"],
     "noEmit": true,
+    "rootDir": ".",
     "baseUrl": "../src"
   },
-  "include": ["."]
+  "include": ["**/*.ts"],
+  "exclude": []
 }

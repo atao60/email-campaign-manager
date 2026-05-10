@@ -18,6 +18,22 @@ export default [
           message: "Please use an explicit import: import process from 'node:process';"
         },
         {
+          name: 'fs',
+          message: "Please use an explicit import: import fs from 'node:fs/promises';"
+        },
+        {
+          name: 'path',
+          message: "Please use an explicit import: import path from 'node:path';"
+        },
+        {
+          name: 'os',
+          message: "Please use an explicit import: import os from 'node:os';"
+        },
+        {
+          name: 'crypto',
+          message: "Please use an explicit import: import crypto from 'node:crypto';"
+        },
+        {
           name: 'Buffer',
           message: "Please use an explicit import: import { Buffer } from 'node:buffer';"
         },
@@ -32,7 +48,15 @@ export default [
       ],
 
       // Optional: Disable some overly strict TypeScript rules if necessary
-      '@typescript-eslint/no-explicit-any': 'warn'
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_'
+        }
+      ]
     }
   },
 

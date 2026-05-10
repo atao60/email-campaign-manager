@@ -145,3 +145,5 @@ vite.config.ts.timestamp-*
 
 .archives/
 generated/
+tmp/
+**/data/history/

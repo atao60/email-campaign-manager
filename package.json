@@ -29,6 +29,7 @@
     "@commitlint/config-conventional": "^20.5.0",
     "@eslint/js": "^10.0.1",
     "@release-it/conventional-changelog": "^11.0.0",
+    "@types/async-lock": "^1.4.2",
     "concurrently": "^9.2.1",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
@@ -65,5 +66,8 @@
       "nodemailer": "^8.0.5"
     },
     "glob": "^13.0.0"
+  },
+  "dependencies": {
+    "async-lock": "^1.4.1"
   }
 }
