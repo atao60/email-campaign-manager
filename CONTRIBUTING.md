@@ -21,7 +21,9 @@ By contributing to `@atao60/personal-mailing-manager`, you agree that your contr
 
 ## Roadmap
 
-**_TBD_**
+- client with i18next
+- logger with pino
+- adapter for gmail
 
 ## Code Overview
 
@@ -111,13 +113,13 @@ This can be solved by using a task runner to hide the differences.
 Alternately, you can use a collection of npm packages which expose small CLI interface.
 The list below contains several of them (src: [survivejs.com](https://survivejs.com/maintenance/packaging/building/#cross-platform-concerns)):
 
-- [cross-env]() - Set environment variables.
+- [cross-env](https://www.npmjs.com/package/cross-env) - Set environment variables.
 - [npm-run-all](https://www.npmjs.com/package/npm-run-all) or [concurrently](https://www.npmjs.com/package/concurrently) - Running npm scripts in series and parallel is problematic as there’s no native support for that and you have to rely on OS level semantics. npm-run-all solves this problem by hiding it behind a small CLI interface. Example: npm-run-all clean build:\*.
 
 Not forgetting, of course...:
 
 - [cpy-cli](https://www.npmjs.com/package/cpy-cli) - Copy files and folders.
-- [mkdirp](https://www.npmjs.com/package/mkdirp) - mkdirp equals to Unix mkdir -p <path> which creates all directories given to it. A normal mkdir <path> would fail if any of the parents are missing. -p stands for --parents.
-- [rimraf](https://www.npmjs.com/package/rimraf) - rimraf equals to rm -rf <path> which in Unix terms removes the given path and its contents without any confirmation. The command is both powerful and dangerous.
+- [mkdirp](https://www.npmjs.com/package/mkdirp) - mkdirp equals to Unix mkdir -p \<path> which creates all directories given to it. A normal mkdir \<path> would fail if any of the parents are missing. -p stands for --parents.
+- [rimraf](https://www.npmjs.com/package/rimraf) - rimraf equals to rm -rf \<path> which in Unix terms removes the given path and its contents without any confirmation. The command is both powerful and dangerous.
 
 > A special case here with [rimraf](https://www.npmjs.com/package/rimraf): it can't be used under [Windows](https://www.microsoft.com/windows/) to delete folder `./node_modules`. See the script `[rmdir.js](https://github.com/atao60/fse-cli/blob/master/scripts/rmdir.js)`.

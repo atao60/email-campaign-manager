@@ -9,6 +9,8 @@ Work with any SMTP server such as Gmail one. Will use `Maildev` in dev mode.
 
 It provides several interfaces: programming, REST, CLI. And a web client.
 
+It's a POC on how to mix two different architectural philosophies, Hexagonal Architecture (Ports and Adapters) and Domain-Driven Design (DDD) when coding with Typescript and Node.js.
+
 ## 🏁 Quickstart
 
 From a first console:
@@ -83,7 +85,12 @@ Google Gemini has been widely used.
 
 ### Standards
 
-Domain-Driven Design: Tackling Complexity in the Heart of Software by Eric Evans (Addison-Wesley Educational Publishers Inc, 2003)
+[Hexagonal architecture (Ports and Adapters)](https://alistair.cockburn.us/hexagonal-architecture), Cockburn, A. (2005)
+
+Domain-Driven Design: Tackling Complexity in the Heart of Software, Eric Evans (Addison-Wesley Educational Publishers Inc, 2003)
+
+Implementing Domain-Driven Design. Vernon, V. (Addison-Wesley Professional, 2013)
+**Relevance:** Hexagonal, REST, See _Chapter 4 - Architecture_
 
 Agile Software Development, Principles, Patterns and Practices, Robert-C Martin (Pearson Education, 2002)
 **Relevance:** A bridge between the philosophy of Agile methodologies and the concrete technical practices required to make Agile work at the code level.
