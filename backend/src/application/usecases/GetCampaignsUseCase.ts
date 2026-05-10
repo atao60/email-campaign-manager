@@ -1,24 +1,16 @@
-import { type CampaignSummary } from '@presentation/rest/controllers/CampaignController';
-// import { type CampaignRepositoryPort } from '@domain/ports/CampaignRepositoryPort';
+import type { CampaignHistoryRepository } from '@domain/repositories/CampaignHistoryRepository';
+import type { CampaignSummary } from '@presentation/rest/dto/CampaignDTO';
 
 export class GetCampaignsUseCase {
-  constructor() {
-    // private readonly campaignRepo: CampaignRepositoryPort
-  }
+  constructor(private readonly campaignHistoryRepo: CampaignHistoryRepository) {}
 
+  /**
+   * Retrieves all historical campaigns and transforms them into
+   * summaries DTO for the presentation layer.
+   */
   public async execute(): Promise<CampaignSummary[]> {
-    // TODO: Fetch from your DB/Redis
-    // const records = await this.campaignRepo.findAll();
+    const campaigns = await this.campaignHistoryRepo.getAll();
 
-    // Mock return for now
-    return [
-      {
-        id: 'camp_123',
-        subject: 'Welcome to our Newsletter!',
-        sentDate: new Date().toISOString(),
-        totalSent: 150,
-        status: 'COMPLETED'
-      }
-    ];
+    return campaigns;
   }
 }

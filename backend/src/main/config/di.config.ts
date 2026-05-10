@@ -12,8 +12,10 @@ import { I18nextLanguageAdapter } from '@infrastructure/adapters/I18nextLanguage
 import { NodemailerAdapter } from '@infrastructure/adapters/NodemailerAdapter';
 import { CsvAdapter } from '@infrastructure/adapters/CsvAdapter';
 import { RedisEmailQueueAdapter } from '@infrastructure/adapters/RedisEmailQueueAdapter';
-import { JsonFailedEmailRepositoryAdapter } from '@infrastructure/adapters/JsonFailedEmailRepositoryAdapter';
+import { JsonFailedEmailRepositoryAdapter } from '@infrastructure/adapters/repositories/JsonFailedEmailRepositoryAdapter';
 import { BullMqMonitorAdapter } from '@infrastructure/adapters/BullMqMonitorAdapter';
+// import { InMemoryCampaignHistoryRepositoryAdapter } from '@infrastructure/adapters/repositories/InMemoryCampaignHistoryRepositoryAdapter';
+import { FileSystemCampaignHistoryRepositoryAdapter } from '@infrastructure/adapters/repositories/FileSystemCampaignHistoryRepositoryAdapter';
 
 // Use Cases
 import { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
@@ -24,6 +26,7 @@ import { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
 import { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
 import { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
 import { GetCampaignStatusUseCase } from '@application/usecases/GetCampaignStatusUseCase';
+import { UpdateDeliveryStatusUseCase } from '@application/usecases/UpdateDeliveryStatusUseCase';
 
 interface InfraDependencies {
   [INFRA_TYPES.RedisClient]: Redis;
@@ -46,7 +49,13 @@ export function configureDependencyInjection(): void {
   // 2. Adapters
   container.registerSingleton(DI_TYPES.CsvPort, () => new CsvAdapter());
 
-  container.registerSingleton(DI_TYPES.FailedEmailRepositoryPort, () => new JsonFailedEmailRepositoryAdapter());
+  container.registerSingleton(DI_TYPES.FailedEmailRepository, () => new JsonFailedEmailRepositoryAdapter());
+
+  // FUTURE in memory as dev mod and in files as staging mode?
+  container.registerSingleton(
+    DI_TYPES.CampaignHistoryRepository,
+    () => new FileSystemCampaignHistoryRepositoryAdapter()
+  );
 
   // The physical mailer is no longer the public EmailPort, it's an internal dependency
   container.registerSingleton(INFRA_TYPES.DirectMailer, (c) => new NodemailerAdapter(c.resolve(DI_TYPES.Logger)));
@@ -69,7 +78,7 @@ export function configureDependencyInjection(): void {
       new EmailWorker(
         resolveInfra(c, INFRA_TYPES.RedisClient),
         resolveInfra(c, INFRA_TYPES.DirectMailer),
-        c.resolve(DI_TYPES.FailedEmailRepositoryPort),
+        c.resolve(DI_TYPES.FailedEmailRepository),
         c.resolve(DI_TYPES.Logger)
       )
   );
@@ -83,17 +92,32 @@ export function configureDependencyInjection(): void {
   container.registerSingleton(
     DI_TYPES.SendCampaignUseCase,
     (c) =>
-      new SendCampaignUseCase(c.resolve(DI_TYPES.CsvPort), c.resolve(DI_TYPES.EmailPort), c.resolve(DI_TYPES.Logger))
+      new SendCampaignUseCase(
+        c.resolve(DI_TYPES.CsvPort),
+        c.resolve(DI_TYPES.EmailPort),
+        c.resolve(DI_TYPES.Logger),
+        c.resolve(DI_TYPES.CampaignHistoryRepository)
+      )
   );
 
-  container.registerSingleton(DI_TYPES.GetCampaignsUseCase, () => new GetCampaignsUseCase());
+  container.registerSingleton(
+    DI_TYPES.GetCampaignsUseCase,
+    (c) => new GetCampaignsUseCase(c.resolve(DI_TYPES.CampaignHistoryRepository))
+  );
 
-  container.registerSingleton(DI_TYPES.GetCampaignDetailsUseCase, () => new GetCampaignDetailsUseCase());
+  container.registerSingleton(
+    DI_TYPES.GetCampaignDetailsUseCase,
+    (c) => new GetCampaignDetailsUseCase(c.resolve(DI_TYPES.CampaignHistoryRepository))
+  );
 
   container.registerSingleton(
     DI_TYPES.GetCampaignStatusUseCase,
-    (c) =>
-      new GetCampaignStatusUseCase(c.resolve(DI_TYPES.QueueMonitorPort), c.resolve(DI_TYPES.FailedEmailRepositoryPort))
+    (c) => new GetCampaignStatusUseCase(c.resolve(DI_TYPES.QueueMonitorPort), c.resolve(DI_TYPES.FailedEmailRepository))
+  );
+
+  container.registerSingleton(
+    DI_TYPES.UpdateDeliveryStatusUseCase,
+    (c) => new UpdateDeliveryStatusUseCase(c.resolve(DI_TYPES.CampaignHistoryRepository))
   );
 
   // 5. Presentation

@@ -45,7 +45,8 @@ export const iocContainer: IocContainer = {
           appContainer.resolve(DI_TYPES.MergeMailingListsUseCase),
           appContainer.resolve(DI_TYPES.SendCampaignUseCase),
           appContainer.resolve(DI_TYPES.GetCampaignsUseCase),
-          appContainer.resolve(DI_TYPES.GetCampaignDetailsUseCase)
+          appContainer.resolve(DI_TYPES.GetCampaignDetailsUseCase),
+          appContainer.resolve(DI_TYPES.UpdateDeliveryStatusUseCase)
         ) as T;
 
       default:

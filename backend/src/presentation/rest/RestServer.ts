@@ -27,7 +27,7 @@ export function startRestServer(container: DiContainer): void {
   app.use(urlencoded({ extended: true }));
 
   // 🛑 TESTS
-  // Put this right before your routes are registered!
+  // Put this right before the app routes are registered!
   app.use((req, res, next) => {
     if (!req.originalUrl.includes('/api/status')) {
       console.log(`📡 [INCOMING REQUEST] ${req.method} ${req.originalUrl}`);

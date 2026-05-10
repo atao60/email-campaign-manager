@@ -1,17 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { GetCampaignStatusUseCase } from './GetCampaignStatusUseCase';
 import { type QueueMonitorPort } from '@domain/ports/QueueMonitorPort';
-import { type FailedEmailRepositoryPort } from '@domain/ports/FailedEmailRepositoryPort';
+import { type FailedEmailRepository } from '@domain/repositories/FailedEmailRepository';
 import { FailedEmail } from '@domain/models/FailedEmail';
 import { type ContactId, type FailedEmailId } from '@domain/models/BrandedTypes';
 
 describe('GetCampaignStatusUseCase', () => {
   let mockQueueMonitor: QueueMonitorPort;
-  let mockFailedEmailRepo: FailedEmailRepositoryPort;
+  let mockFailedEmailRepo: FailedEmailRepository;
   let useCase: GetCampaignStatusUseCase;
 
   beforeEach(() => {
+    // Create mock implementations
     mockQueueMonitor = {
       getMetrics: vi.fn()
     };
@@ -20,7 +21,13 @@ describe('GetCampaignStatusUseCase', () => {
       findAll: vi.fn()
     };
 
+    // Inject the mocks into the Use Case
     useCase = new GetCampaignStatusUseCase(mockQueueMonitor, mockFailedEmailRepo);
+  });
+
+  afterEach(() => {
+    // Always restore mocks to prevent cross-test pollution
+    vi.restoreAllMocks();
   });
 
   it('should aggregate live queue metrics with hard failure counts', async () => {
@@ -43,12 +50,36 @@ describe('GetCampaignStatusUseCase', () => {
     const status = await useCase.execute();
 
     expect(mockQueueMonitor.getMetrics).toHaveBeenCalledWith('email-queue');
+    expect(mockFailedEmailRepo.findAll).toHaveBeenCalled();
     expect(status).toEqual({
       waiting: 10,
       active: 2,
       completed: 50,
       failed: 1,
       hardFailures: 3 // Length of the mock array
+    });
+  });
+
+  it('should return 0 hard failures if the failed emails repository is empty', async () => {
+    // Mock empty queue metrics
+    vi.mocked(mockQueueMonitor.getMetrics).mockResolvedValue({
+      waiting: 0,
+      active: 0,
+      completed: 100,
+      failed: 0
+    });
+
+    // Mock empty hard failures
+    vi.mocked(mockFailedEmailRepo.findAll).mockResolvedValue([]);
+
+    const status = await useCase.execute();
+
+    expect(status).toEqual({
+      waiting: 0,
+      active: 0,
+      completed: 100,
+      failed: 0,
+      hardFailures: 0
     });
   });
 });

@@ -1,11 +1,11 @@
 import { type QueueMonitorPort } from '@domain/ports/QueueMonitorPort';
-import { type FailedEmailRepositoryPort } from '@domain/ports/FailedEmailRepositoryPort';
+import { type FailedEmailRepository } from '@domain/repositories/FailedEmailRepository';
 import { type CampaignStatus } from '@domain/models/CampaignStatus';
 
 export class GetCampaignStatusUseCase {
   constructor(
     private readonly queueMonitor: QueueMonitorPort,
-    private readonly failedEmailRepo: FailedEmailRepositoryPort
+    private readonly failedEmailRepo: FailedEmailRepository
   ) {}
 
   public async execute(): Promise<CampaignStatus> {

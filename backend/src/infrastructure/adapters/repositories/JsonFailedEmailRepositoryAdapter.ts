@@ -2,10 +2,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { cwd } from 'node:process';
 
-import { type FailedEmailRepositoryPort } from '@domain/ports/FailedEmailRepositoryPort';
+import { type FailedEmailRepository } from '@domain/repositories/FailedEmailRepository';
 import { type FailedEmail } from '@domain/models/FailedEmail';
 
-export class JsonFailedEmailRepositoryAdapter implements FailedEmailRepositoryPort {
+export class JsonFailedEmailRepositoryAdapter implements FailedEmailRepository {
   // private readonly filePath = path.join(cwd(), 'data', 'failed-emails.json');
 
   constructor(private readonly filePath: string = path.join(cwd(), 'data', 'failed-emails.json')) {}

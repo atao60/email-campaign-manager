@@ -3,10 +3,14 @@ import type { GetCampaignStatusUseCase } from '@application/usecases/GetCampaign
 import type { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
 import type { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
 import type { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
+import type { UpdateDeliveryStatusUseCase } from '@application/usecases/UpdateDeliveryStatusUseCase';
 import type { CsvPort } from '@domain/ports/CsvPort';
 import type { EmailPort } from '@domain/ports/EmailPort';
 import type { LanguagePort } from '@domain/ports/LanguagePort';
 import type { LoggerPort } from '@domain/ports/LoggerPort';
+import type { QueueMonitorPort } from '@domain/ports/QueueMonitorPort';
+import type { CampaignHistoryRepository } from '@domain/repositories/CampaignHistoryRepository';
+import type { FailedEmailRepository } from '@domain/repositories/FailedEmailRepository';
 import type { CliOutputService } from '@presentation/cli/services/CliOutputService';
 
 /**
@@ -25,7 +29,8 @@ export const DI_TYPES = {
   // Ports
   CsvPort: 'CsvPort',
   EmailPort: 'EmailPort',
-  FailedEmailRepositoryPort: 'FailedEmailRepositoryPort',
+  FailedEmailRepository: 'FailedEmailRepository',
+  CampaignHistoryRepository: 'CampaignHistoryRepository',
   QueueMonitorPort: 'QueueMonitorPort',
 
   // Use Cases
@@ -33,7 +38,8 @@ export const DI_TYPES = {
   SendCampaignUseCase: 'SendCampaignUseCase',
   GetCampaignStatusUseCase: 'GetCampaignStatusUseCase',
   GetCampaignsUseCase: 'GetCampaignsUseCase',
-  GetCampaignDetailsUseCase: 'GetCampaignDetailsUseCase'
+  GetCampaignDetailsUseCase: 'GetCampaignDetailsUseCase',
+  UpdateDeliveryStatusUseCase: 'UpdateDeliveryStatusUseCase'
 } as const;
 
 /**
@@ -81,11 +87,17 @@ export interface AppDependencies {
   [DI_TYPES.Logger]: LoggerPort;
   [DI_TYPES.CsvPort]: CsvPort;
   [DI_TYPES.EmailPort]: EmailPort;
+  [DI_TYPES.QueueMonitorPort]: QueueMonitorPort;
+
+  [DI_TYPES.FailedEmailRepository]: FailedEmailRepository;
+  [DI_TYPES.CampaignHistoryRepository]: CampaignHistoryRepository;
+
   [DI_TYPES.MergeMailingListsUseCase]: MergeMailingListsUseCase;
   [DI_TYPES.SendCampaignUseCase]: SendCampaignUseCase;
   [DI_TYPES.GetCampaignStatusUseCase]: GetCampaignStatusUseCase;
   [DI_TYPES.GetCampaignsUseCase]: GetCampaignsUseCase;
   [DI_TYPES.GetCampaignDetailsUseCase]: GetCampaignDetailsUseCase;
+  [DI_TYPES.UpdateDeliveryStatusUseCase]: UpdateDeliveryStatusUseCase;
 
   [PRESENTATION_TYPES.CliOutputService]: CliOutputService;
 }

@@ -3,6 +3,38 @@ import { type EmailPort, type EmailMessageDto } from '@domain/ports/EmailPort';
 import { type Contact } from '@domain/models/Contact';
 import { type LoggerPort } from '@domain/ports/LoggerPort';
 
+/**
+ * ==========================================
+ * Synchronous SMTP Client Adapter
+ * ==========================================
+ *
+ * @rule
+ * Provides the concrete infrastructure implementation of the `EmailPort` interface
+ * using the `nodemailer` library to send emails via SMTP.
+ *
+ * @why
+ * Following Hexagonal (Ports and Adapters) Architecture, the core domain must remain
+ * strictly isolated from third-party libraries and network protocols. By encapsulating
+ * Nodemailer inside this adapter, we protect the business logic (Use Cases) from being tightly
+ * coupled to SMTP. If the application later migrates to an API-based email provider
+ * (e.g., SendGrid, AWS SES), a new adapter can simply be swapped in without altering a
+ * single line of core domain code.
+ *
+ * @warning
+ * **Nodemailer is an SMTP Client, not an SMTP Server.**
+ * It cannot send emails to the outside world by itself. The default configuration
+ * (`localhost:1025`) is strictly for local development using mock servers like Maildev or MailHog.
+ * For production environments, the container injecting this adapter MUST provide valid
+ * credentials (host, port, auth) for a production-grade SMTP relay (e.g., Amazon SES, SendGrid SMTP).
+ *
+ * @how
+ * This class wraps a Nodemailer `Transporter` configured with connection pooling to
+ * safely handle bulk email processing without overwhelming the server.
+ * When the domain invokes `send()` or `scheduleSend()`, the adapter translates the domain-agnostic
+ * `Contact` and `EmailMessageDto` objects into Nodemailer's specific payload format.
+ * It manages the actual SMTP transmission, catches network-level errors, and delegates
+ * observability to the injected `LoggerPort`.
+ */
 export class NodemailerAdapter implements EmailPort {
   private readonly transporter: nodemailer.Transporter;
 
@@ -44,7 +76,7 @@ export class NodemailerAdapter implements EmailPort {
       this.logger.info(`Email sent to ${contact.email}`);
     } catch (error) {
       this.logger.error(`Failed to send email to ${contact.email}`, error);
-      // Here: interact with FailedEmailRepositoryPort to log the failure
+      // Here: interact with FailedEmailRepository to log the failure
     }
   }
 

@@ -1,27 +1,29 @@
+import { error, log, warn } from 'node:console';
+
 import { type LoggerPort } from '@domain/ports/LoggerPort';
 
 export class ConsoleLogger implements LoggerPort {
   public info(message: string, ...meta: unknown[]): void {
     if (meta.length > 0) {
-      console.log(`[INFO] ${message}`, ...meta);
+      log(`[INFO] ${message}`, ...meta);
     } else {
-      console.log(`[INFO] ${message}`);
+      log(`[INFO] ${message}`);
     }
   }
 
   public warn(message: string, ...meta: unknown[]): void {
     if (meta.length > 0) {
-      console.warn(`[WARN] ${message}`, ...meta);
+      warn(`[WARN] ${message}`, ...meta);
     } else {
-      console.warn(`[WARN] ${message}`);
+      warn(`[WARN] ${message}`);
     }
   }
 
-  public error(message: string, error?: unknown): void {
-    if (error) {
-      console.error(`[ERROR] ${message}`, error);
+  public error(message: string, err?: unknown): void {
+    if (err) {
+      error(`[ERROR] ${message}`, err);
     } else {
-      console.error(`[ERROR] ${message}`);
+      error(`[ERROR] ${message}`);
     }
   }
 }

@@ -13,7 +13,7 @@ export class Contact {
     this.firstName = firstName;
     this.lastName = lastName;
     this.email = email;
-    this.jobTitle = jobTitle;
-    this.company = company;
+    if (jobTitle) this.jobTitle = jobTitle;
+    if (company) this.company = company;
   }
 }

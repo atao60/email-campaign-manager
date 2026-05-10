@@ -1,12 +1,15 @@
 import { type EmailPort } from '@domain/ports/EmailPort';
 import { type CsvPort } from '@domain/ports/CsvPort';
 import { type LoggerPort } from '@domain/ports/LoggerPort';
+import type { CampaignHistoryRepository } from '@domain/repositories/CampaignHistoryRepository';
+import type { SentCampaign } from '@domain/models/Campaign';
 
 export class SendCampaignUseCase {
   constructor(
     private readonly csvPort: CsvPort,
     private readonly emailPort: EmailPort,
-    private readonly logger: LoggerPort
+    private readonly logger: LoggerPort,
+    private readonly historyRepository: CampaignHistoryRepository
   ) {}
 
   public async execute(
@@ -35,7 +38,9 @@ export class SendCampaignUseCase {
       throw new Error('Either template HTML or URL must be provided.');
     }
 
+    // Retrieve the contact list
     this.logger.info(`Reading contacts from ${contactsFilePath}`);
+
     const contacts = await this.csvPort.read(contactsFilePath);
 
     if (contacts.length === 0) {
@@ -43,6 +48,7 @@ export class SendCampaignUseCase {
       return 0;
     }
 
+    // Process contacts: put them in queue, waiting to be sent
     this.logger.info(`Queuing campaign for ${contacts.length} contacts...`);
 
     for (const contact of contacts) {
@@ -55,6 +61,27 @@ export class SendCampaignUseCase {
     }
 
     this.logger.info('All emails successfully queued to Redis.');
+
+    const pendingEmails = contacts.map((contact) => ({
+      address: contact.email,
+      status: 'PENDING' as const
+    }));
+
+    // Build the campaign record
+    const campaignRecord: SentCampaign = {
+      id: `camp_${Date.now()}`,
+      subject: subject,
+      sentDate: new Date().toISOString(),
+      totalSent: contacts.length,
+      status: 'PARTIAL', // It stays PARTIAL until webhooks confirm delivery or failure
+      htmlContent: templateHtml,
+      emails: pendingEmails
+    };
+
+    // Save the campaign record to the history repository
+    this.logger.info(`Saving campaign history for ${campaignRecord.id}`);
+    await this.historyRepository.save(campaignRecord);
+
     // Return the total number of contacts processed
     return contacts.length;
   }

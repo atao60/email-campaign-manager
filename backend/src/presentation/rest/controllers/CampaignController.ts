@@ -20,6 +20,7 @@ import type { MergeMailingListsUseCase } from '@application/usecases/MergeMailin
 import type { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
 import type { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
 import type { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
+import type { UpdateDeliveryStatusUseCase } from '@application/usecases/UpdateDeliveryStatusUseCase';
 
 interface MergePayload {
   inputs: string[];
@@ -47,18 +48,21 @@ export class CampaignController extends Controller {
   private readonly sendCampaignUseCase: SendCampaignUseCase;
   private readonly getCampaignsUseCase: GetCampaignsUseCase;
   private readonly getCampaignDetailsUseCase: GetCampaignDetailsUseCase;
+  private readonly updateDeliveryStatusUseCase: UpdateDeliveryStatusUseCase;
 
   constructor(
     mergeUseCase: MergeMailingListsUseCase,
     sendCampaignUseCase: SendCampaignUseCase,
     getCampaignsUseCase: GetCampaignsUseCase,
-    getCampaignDetailsUseCase: GetCampaignDetailsUseCase
+    getCampaignDetailsUseCase: GetCampaignDetailsUseCase,
+    updateDeliveryStatusUseCase: UpdateDeliveryStatusUseCase
   ) {
     super();
     this.mergeUseCase = mergeUseCase;
     this.sendCampaignUseCase = sendCampaignUseCase;
     this.getCampaignsUseCase = getCampaignsUseCase;
     this.getCampaignDetailsUseCase = getCampaignDetailsUseCase;
+    this.updateDeliveryStatusUseCase = updateDeliveryStatusUseCase;
   }
 
   @Post('merge')
@@ -170,5 +174,23 @@ export class CampaignController extends Controller {
       console.error(`Failed to fetch details for campaign ${campaignId}:`, error);
       return serverError(500, { error: 'Internal Server Error while fetching campaign details.' });
     }
+  }
+
+  // Example Webhook Endpoint in a Controller
+  @Post('webhooks/email-status')
+  public async handleEmailProviderWebhook(
+    @Body() payload: any // The exact shape depends on the provider (SendGrid, etc.)
+  ) {
+    console.log('[TEST] CampaignController.handleEmailProviderWebhook, payload: ', payload);
+    // Example: Parsing a theoretical SendGrid webhook payload
+    const { campaignId, email, event, reason } = payload;
+
+    const status = ['bounce', 'dropped'].includes(event) ? 'FAILED' : 'OK';
+
+    // Pass the real-world data into your Domain Layer
+    await this.updateDeliveryStatusUseCase.execute(campaignId, email, status, reason);
+
+    // Always return 200 OK so the provider knows you received the webhook
+    return { success: true };
   }
 }

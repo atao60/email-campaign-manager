@@ -1,11 +1,12 @@
 import { Worker, type Job } from 'bullmq';
 import Redis from 'ioredis';
+import { randomUUID } from 'node:crypto';
 
 import { type EmailPort } from '@domain/ports/EmailPort';
 import { type LoggerPort } from '@domain/ports/LoggerPort';
 import { Contact } from '@domain/models/Contact';
 import { type ContactId, type FailedEmailId } from '@domain/models/BrandedTypes';
-import { type FailedEmailRepositoryPort } from '@domain/ports/FailedEmailRepositoryPort';
+import { type FailedEmailRepository } from '@domain/repositories/FailedEmailRepository';
 import { FailedEmail } from '@domain/models/FailedEmail';
 
 /**
@@ -17,7 +18,7 @@ export class EmailWorker {
   constructor(
     redisClient: Redis,
     private readonly actualMailer: EmailPort, // Injects NodemailerAdapter
-    private readonly failedEmailRepo: FailedEmailRepositoryPort,
+    private readonly failedEmailRepo: FailedEmailRepository,
     private readonly logger: LoggerPort
   ) {
     this.worker = new Worker(
@@ -54,7 +55,7 @@ export class EmailWorker {
       }
 
       const failure = new FailedEmail(
-        crypto.randomUUID() as FailedEmailId,
+        randomUUID() as FailedEmailId,
         job.data.contact.id as ContactId,
         job.data.contact.email,
         err.message,
