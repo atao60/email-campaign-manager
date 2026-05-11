@@ -1,7 +1,7 @@
 import type { AppDependencies, DependencyToken } from './Types';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { iocContainer } from './tsoa-ioc';
+import { iocContainer } from '@config/tsoa-ioc';
 
 // Type for a function that manufactures a service (Factory).
 // It receives the container itself to resolve its own dependencies recursively.

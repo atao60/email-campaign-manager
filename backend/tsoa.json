@@ -11,7 +11,7 @@
   },
   "routes": {
     "routesDir": "src/presentation/rest/generated",
-    "iocModule": "src/infrastructure/di/tsoa-ioc",
+    "iocModule": "src/main/config/tsoa-ioc",
     "basePath": "",
     "esm": true
   },

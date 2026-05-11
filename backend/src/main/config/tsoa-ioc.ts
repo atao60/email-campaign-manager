@@ -1,7 +1,7 @@
 import type { IocContainer, ServiceIdentifier } from '@tsoa/runtime';
 
-import { type DiContainer } from './DiContainer';
-import { DI_TYPES } from './Types';
+import { type DiContainer } from '@infrastructure/di/DiContainer';
+import { DI_TYPES } from '@infrastructure/di/Types';
 import { CampaignController } from '@presentation/rest/controllers/CampaignController';
 import { StatusController } from '@presentation/rest/controllers/StatusController';
 import { HealthController } from '@presentation/rest/controllers/HealthController';

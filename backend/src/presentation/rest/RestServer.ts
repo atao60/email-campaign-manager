@@ -5,7 +5,7 @@ import { env } from 'node:process';
 
 import { type DiContainer } from '@infrastructure/di/DiContainer';
 
-import { setContainer } from '@infrastructure/di/tsoa-ioc';
+import { setContainer } from '@config/tsoa-ioc';
 import { RegisterRoutes } from './generated/routes';
 
 // Load variables from .env file
