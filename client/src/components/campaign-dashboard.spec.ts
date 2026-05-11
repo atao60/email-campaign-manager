@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 import { CampaignDashboard } from './campaign-dashboard'; // Imports and registers <campaign-dashboard>
-import { apiClient } from '../api-client';
+import { apiClient, type CampaignStatus } from '../api-client';
 
 // Mock the API client module entirely
 vi.mock('../api-client', () => ({
@@ -17,7 +17,31 @@ describe('CampaignDashboard Component', () => {
     vi.clearAllMocks();
   });
 
-  it('should render the dashboard and display metrics from the API', async () => {
+  it('should display a loading message before the API request resolves', async () => {
+    // Delay the mock resolution so we can inspect the initial render state
+    let resolveApi!: (value: CampaignStatus | PromiseLike<CampaignStatus>) => void;
+    vi.mocked(apiClient.getStatus).mockReturnValue(
+      new Promise((res) => {
+        resolveApi = res;
+      })
+    );
+
+    const element = document.createElement('campaign-dashboard') as CampaignDashboard;
+    document.body.appendChild(element);
+
+    await customElements.whenDefined('campaign-dashboard');
+    await element.updateComplete;
+
+    const shadow = element.shadowRoot;
+
+    // Assert the loading text is present
+    expect(shadow?.textContent).toContain('Loading metrics...');
+
+    // Clean up the hanging promise
+    resolveApi({ waiting: 0, active: 0, completed: 0, failed: 0, hardFailures: 0 });
+  });
+
+  it('should render the dashboard and display metrics and bilingual labels from the API', async () => {
     // 1. Setup the mock data before the component connects
     vi.mocked(apiClient.getStatus).mockResolvedValue({
       waiting: 15,
@@ -34,27 +58,28 @@ describe('CampaignDashboard Component', () => {
     // 3. Wait for the initial render and the async API call to resolve
     await customElements.whenDefined('campaign-dashboard');
     await new Promise((resolve) => setTimeout(resolve, 0)); // Flushes microtasks
-
-    // @ts-expect-ignore - access the LitElement updateComplete promise
-    await element.updateComplete;
+    await element.updateComplete; // Wait for Lit to process the state change
 
     // 4. Assert against the Shadow DOM
     const shadow = element.shadowRoot;
 
-    // Check "Waiting" metric (first card)
-    const waitingValue = shadow?.querySelector('.metric-card:nth-child(1) .metric-value');
-    expect(waitingValue?.textContent).toBe('15');
+    // Check "Waiting" metric (first card) and its label
+    const firstCard = shadow?.querySelector('.metric-card:nth-child(1)');
+    expect(firstCard?.querySelector('.metric-label')?.textContent).toBe('En attente (Waiting)');
+    expect(firstCard?.querySelector('.metric-value')?.textContent).toBe('15');
 
-    // Check "Hard Failures" metric
-    const hardFailuresValue = shadow?.querySelector('.hard-failures .metric-value');
-    expect(hardFailuresValue?.textContent).toBe('4');
+    // Check "Hard Failures" metric and its label
+    const hardFailuresCard = shadow?.querySelector('.hard-failures');
+    expect(hardFailuresCard?.querySelector('.metric-label')?.textContent).toBe('Échecs Permanents (Hard Failures)');
+    expect(hardFailuresCard?.querySelector('.metric-value')?.textContent).toBe('4');
   });
 
   it('should display an error banner if the API request fails', async () => {
     // Temporarily swallow console.error because we EXPECT it to throw here
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    vi.mocked(apiClient.getStatus).mockRejectedValue(new Error('Network Error'));
+    // vi.mocked(apiClient.getStatus).mockRejectedValue(new Error('Network Error'));
+    vi.mocked(apiClient.getStatus).mockImplementation(() => Promise.reject(new Error('Network Error')));
 
     const element = document.createElement('campaign-dashboard') as CampaignDashboard;
     document.body.appendChild(element);
@@ -67,9 +92,21 @@ describe('CampaignDashboard Component', () => {
     const errorDiv = shadow?.querySelector('.error');
 
     expect(errorDiv?.textContent).toContain('Failed to connect to the backend API');
+    expect(consoleSpy).toHaveBeenCalled(); // Ensure the error was actually logged internally
+
+    consoleSpy.mockRestore();
   });
 
   it('should clear the polling interval when removed from the DOM', async () => {
+    // Explicitly reset the mock to a success state to prevent leakage!
+    vi.mocked(apiClient.getStatus).mockResolvedValue({
+      waiting: 0,
+      active: 0,
+      completed: 0,
+      failed: 0,
+      hardFailures: 0
+    });
+
     // Spy on the global clearInterval function
     const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
 
@@ -86,6 +123,15 @@ describe('CampaignDashboard Component', () => {
   });
 
   it('should safely handle disconnection if no polling interval exists', () => {
+    // Also reset it here just to be completely safe
+    vi.mocked(apiClient.getStatus).mockResolvedValue({
+      waiting: 0,
+      active: 0,
+      completed: 0,
+      failed: 0,
+      hardFailures: 0
+    });
+
     const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
 
     const element = document.createElement('campaign-dashboard') as CampaignDashboard;
