@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+(globalThis as any).litDisableDevMode = true;
+
+import { describe, it, expect, vi, beforeEach, afterEach, type Mocked } from 'vitest';
 import * as fs from 'node:fs';
 import { Buffer } from 'node:buffer';
 
@@ -9,6 +11,7 @@ import type { SendCampaignUseCase } from '@application/usecases/SendCampaignUseC
 import type { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
 import type { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
 import type { UpdateDeliveryStatusUseCase } from '@application/usecases/UpdateDeliveryStatusUseCase';
+import type { SentCampaign } from '@domain/models/Campaign';
 
 // Mock the file system to prevent actual file creation during tests
 vi.mock('node:fs', () => ({
@@ -19,11 +22,11 @@ vi.mock('node:fs', () => ({
 
 describe('CampaignController', () => {
   // Mock Use Cases
-  let mergeUseCase: vi.Mocked<MergeMailingListsUseCase>;
-  let sendCampaignUseCase: vi.Mocked<SendCampaignUseCase>;
-  let getCampaignsUseCase: vi.Mocked<GetCampaignsUseCase>;
-  let getCampaignDetailsUseCase: vi.Mocked<GetCampaignDetailsUseCase>;
-  let updateDeliveryStatusUseCase: vi.Mocked<UpdateDeliveryStatusUseCase>;
+  let mergeUseCase: Mocked<MergeMailingListsUseCase>;
+  let sendCampaignUseCase: Mocked<SendCampaignUseCase>;
+  let getCampaignsUseCase: Mocked<GetCampaignsUseCase>;
+  let getCampaignDetailsUseCase: Mocked<GetCampaignDetailsUseCase>;
+  let updateDeliveryStatusUseCase: Mocked<UpdateDeliveryStatusUseCase>;
 
   let controller: CampaignController;
 
@@ -39,11 +42,11 @@ describe('CampaignController', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Initialize mock use cases
-    mergeUseCase = { execute: vi.fn() } as any;
-    sendCampaignUseCase = { execute: vi.fn() } as any;
-    getCampaignsUseCase = { execute: vi.fn() } as any;
-    getCampaignDetailsUseCase = { execute: vi.fn() } as any;
-    updateDeliveryStatusUseCase = { execute: vi.fn() } as any;
+    mergeUseCase = { execute: vi.fn() } as unknown as Mocked<MergeMailingListsUseCase>;
+    sendCampaignUseCase = { execute: vi.fn() } as unknown as Mocked<SendCampaignUseCase>;
+    getCampaignsUseCase = { execute: vi.fn() } as unknown as Mocked<GetCampaignsUseCase>;
+    getCampaignDetailsUseCase = { execute: vi.fn() } as unknown as Mocked<GetCampaignDetailsUseCase>;
+    updateDeliveryStatusUseCase = { execute: vi.fn() } as unknown as Mocked<UpdateDeliveryStatusUseCase>;
 
     controller = new CampaignController(
       mergeUseCase,
@@ -65,7 +68,7 @@ describe('CampaignController', () => {
       mergeUseCase.execute.mockResolvedValue(undefined);
 
       const requestBody = { inputs: ['list1.csv'], output: 'out.csv' };
-      const response = await controller.mergeLists(requestBody, serverError as any);
+      const response = await controller.mergeLists(requestBody, serverError);
 
       expect(mergeUseCase.execute).toHaveBeenCalledWith(['list1.csv'], 'out.csv');
       expect(response).toEqual({ message: 'Successfully merged lists into out.csv' });
@@ -74,7 +77,7 @@ describe('CampaignController', () => {
     it('should handle internal errors during merge', async () => {
       mergeUseCase.execute.mockRejectedValue(new Error('Merge Failed'));
 
-      const response = await controller.mergeLists({ inputs: [], output: 'out.csv' }, serverError as any);
+      const response = await controller.mergeLists({ inputs: [], output: 'out.csv' }, serverError);
 
       expect(serverError).toHaveBeenCalledWith(500, { error: 'Internal Server Error during merge.' });
       expect(response).toEqual({ status: 500, payload: { error: 'Internal Server Error during merge.' } });
@@ -86,9 +89,9 @@ describe('CampaignController', () => {
 
     it('should fail validation if templateUrl is provided instead of HTML', async () => {
       const response = await controller.launchCampaign(
-        serverError as any,
-        validationError as any,
-        acceptedResponse as any,
+        serverError,
+        validationError,
+        acceptedResponse,
         mockFile,
         'Subject',
         undefined, // no html
@@ -100,15 +103,7 @@ describe('CampaignController', () => {
     });
 
     it('should fail validation if neither html nor url is provided', async () => {
-      await controller.launchCampaign(
-        serverError as any,
-        validationError as any,
-        acceptedResponse as any,
-        mockFile,
-        'Subject',
-        undefined,
-        undefined
-      );
+      await controller.launchCampaign(serverError, validationError, acceptedResponse, mockFile, 'Subject');
 
       expect(validationError).toHaveBeenCalledWith(400, { error: 'Must provide either templateHtml or templateUrl' });
     });
@@ -118,9 +113,9 @@ describe('CampaignController', () => {
       sendCampaignUseCase.execute.mockResolvedValue(100);
 
       const response = await controller.launchCampaign(
-        serverError as any,
-        validationError as any,
-        acceptedResponse as any,
+        serverError,
+        validationError,
+        acceptedResponse,
         mockFile,
         'My Subject',
         '<p>Hello</p>'
@@ -151,9 +146,9 @@ describe('CampaignController', () => {
       sendCampaignUseCase.execute.mockResolvedValue(5);
 
       await controller.launchCampaign(
-        serverError as any,
-        validationError as any,
-        acceptedResponse as any,
+        serverError,
+        validationError,
+        acceptedResponse,
         mockFile,
         'Subject',
         '<p>HTML</p>'
@@ -169,9 +164,9 @@ describe('CampaignController', () => {
       sendCampaignUseCase.execute.mockRejectedValue(new Error('System crash'));
 
       await controller.launchCampaign(
-        serverError as any,
-        validationError as any,
-        acceptedResponse as any,
+        serverError,
+        validationError,
+        acceptedResponse,
         mockFile,
         'Subject',
         '<p>HTML</p>'
@@ -183,10 +178,10 @@ describe('CampaignController', () => {
 
   describe('getCampaigns', () => {
     it('should return a list of campaigns', async () => {
-      const mockCampaigns = [{ id: '1', subject: 'A', status: 'completed' }];
-      getCampaignsUseCase.execute.mockResolvedValue(mockCampaigns as any);
+      const mockCampaigns = [{ id: '1', subject: 'A', status: 'COMPLETED' as const, sentDate: '', totalSent: 0 }];
+      getCampaignsUseCase.execute.mockResolvedValue(mockCampaigns);
 
-      const response = await controller.getCampaigns(serverError as any);
+      const response = await controller.getCampaigns(serverError);
 
       expect(getCampaignsUseCase.execute).toHaveBeenCalled();
       expect(response).toEqual(mockCampaigns);
@@ -195,7 +190,7 @@ describe('CampaignController', () => {
     it('should handle internal errors', async () => {
       getCampaignsUseCase.execute.mockRejectedValue(new Error('DB Error'));
 
-      await controller.getCampaigns(serverError as any);
+      await controller.getCampaigns(serverError);
 
       expect(serverError).toHaveBeenCalledWith(500, { error: 'Internal Server Error while fetching campaigns.' });
     });
@@ -203,10 +198,10 @@ describe('CampaignController', () => {
 
   describe('getCampaignDetails', () => {
     it('should return campaign details if found', async () => {
-      const mockDetails = { id: '123', subject: 'Detailed Subject' };
-      getCampaignDetailsUseCase.execute.mockResolvedValue(mockDetails as any);
+      const mockDetails = { id: '123', subject: 'Detailed Subject' } as unknown as SentCampaign;
+      getCampaignDetailsUseCase.execute.mockResolvedValue(mockDetails);
 
-      const response = await controller.getCampaignDetails('123', notFoundError as any, serverError as any);
+      const response = await controller.getCampaignDetails('123', notFoundError, serverError);
 
       expect(getCampaignDetailsUseCase.execute).toHaveBeenCalledWith('123');
       expect(response).toEqual(mockDetails);
@@ -215,7 +210,7 @@ describe('CampaignController', () => {
     it('should return 404 if the campaign is not found (returns null)', async () => {
       getCampaignDetailsUseCase.execute.mockResolvedValue(null);
 
-      const response = await controller.getCampaignDetails('123', notFoundError as any, serverError as any);
+      const response = await controller.getCampaignDetails('123', notFoundError, serverError);
 
       expect(notFoundError).toHaveBeenCalledWith(404, { error: 'Campaign with ID 123 not found.' });
       expect(response).toEqual({ status: 404, payload: { error: 'Campaign with ID 123 not found.' } });
@@ -224,7 +219,7 @@ describe('CampaignController', () => {
     it('should handle internal errors', async () => {
       getCampaignDetailsUseCase.execute.mockRejectedValue(new Error('Error retrieving data'));
 
-      await controller.getCampaignDetails('123', notFoundError as any, serverError as any);
+      await controller.getCampaignDetails('123', notFoundError, serverError);
 
       expect(serverError).toHaveBeenCalledWith(500, {
         error: 'Internal Server Error while fetching campaign details.'
