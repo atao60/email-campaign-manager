@@ -9,8 +9,6 @@ export class UpdateDeliveryStatusUseCase {
     newStatus: 'OK' | 'FAILED',
     reason?: string
   ): Promise<void> {
-    console.log('[TEST] UpdateDeliveryStatusUseCase.execute');
-
     // We delegate directly to the repository method we just built.
     // The FileSystem adapter uses `async-lock` inside this method to safely
     // handle the Read-Modify-Write process without race conditions.

@@ -17,7 +17,6 @@ export class FileSystemCampaignHistoryRepositoryAdapter implements CampaignHisto
     this.storageDir = storageDir || DEFAULT_HISTORY_DIR;
     // Initialize the lock mechanism
     this.lock = new AsyncLock();
-    console.log('[TEST] FileSystemCampaignHistoryRepositoryAdapter.ctor, this.storageDir: ', this.storageDir);
   }
 
   private async ensureDirectoryExists(): Promise<void> {

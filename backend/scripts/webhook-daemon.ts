@@ -26,12 +26,10 @@ setInterval(processPendingWebhooks, DAEMON_POLL_INTERVAL);
  * Main loop: Scans the history directory and processes unfinished campaigns.
  */
 async function processPendingWebhooks() {
-  console.log('[TEST]processPendingWebhooks starting, HISTORY_DIR: ', HISTORY_DIR);
   try {
     const files = await fs.readdir(HISTORY_DIR);
 
     for (const file of files) {
-      console.log('[TEST]processPendingWebhooks, file name: ', file);
       if (!file.endsWith('.json')) {
         continue;
       }
@@ -57,17 +55,13 @@ async function processCampaignFile(file: string) {
     if (!content) {
       return;
     }
-    console.log('[TEST]processCampaignFile, file content: ', content);
 
     const data = JSON.parse(content);
-    console.log('[TEST]processCampaignFile, data.status: ', data.status);
-
     // Only bother with campaigns that aren't finished
     if (data.status !== 'PARTIAL') {
       return;
     }
 
-    console.log('[TEST]processCampaignFile, data.id: ', data.id);
     for (const email of data.emails) {
       if (email.status === 'PENDING') {
         scheduleWebhookForEmail(data.id, email);
@@ -84,7 +78,6 @@ async function processCampaignFile(file: string) {
  */
 function scheduleWebhookForEmail(campaignId: string, email: { address: string; status: string }) {
   const trackingKey = `${campaignId}_${email.address}`;
-  console.log('[TEST]scheduleWebhookForEmail, email.status: ', email.status);
 
   // Only schedule if we aren't already waiting for a timeout or fetch for this specific email
   if (!inFlightWebhooks.has(trackingKey)) {
@@ -93,7 +86,6 @@ function scheduleWebhookForEmail(campaignId: string, email: { address: string; s
     // Calculate the delay using our constants
     const randomDelayRange = MAX_DELIVERY_DELAY - MIN_DELIVERY_DELAY;
     const delay = Math.floor(Math.random() * randomDelayRange) + MIN_DELIVERY_DELAY;
-    console.log('[TEST]scheduleWebhookForEmail, delay: ', delay);
     // Schedule the network execution
     setTimeout(() => {
       const isBounce = Math.random() < EMAIL_BOUNCE_RATE;
@@ -106,7 +98,6 @@ function scheduleWebhookForEmail(campaignId: string, email: { address: string; s
  * Executes the actual HTTP POST request to the backend.
  */
 async function fireWebhook(campaignId: string, emailAddress: string, trackingKey: string, isBounce: boolean) {
-  console.log('[TEST]fireWebhook, trackingKey: ', trackingKey);
   try {
     const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
@@ -118,7 +109,6 @@ async function fireWebhook(campaignId: string, emailAddress: string, trackingKey
         reason: isBounce ? 'Simulated hard bounce' : undefined
       })
     });
-    console.log('[TEST]fireWebhook, fetch done, emailAddress: ', emailAddress);
 
     if (response.ok) {
       const icon = isBounce ? '🔴' : '🟢';

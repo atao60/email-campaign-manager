@@ -181,7 +181,6 @@ export class CampaignController extends Controller {
   public async handleEmailProviderWebhook(
     @Body() payload: any // The exact shape depends on the provider (SendGrid, etc.)
   ) {
-    console.log('[TEST] CampaignController.handleEmailProviderWebhook, payload: ', payload);
     // Example: Parsing a theoretical SendGrid webhook payload
     const { campaignId, email, event, reason } = payload;
 
