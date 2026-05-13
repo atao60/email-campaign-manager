@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 
+import { initTestI18n } from '../test-i18n-setup';
 import './campaign-history'; // Ensure the custom element is registered
 import type { CampaignHistory } from './campaign-history';
 import { apiClient } from '../api-client';
@@ -11,6 +12,10 @@ vi.mock('../api-client', () => ({
     getCampaignDetails: vi.fn()
   }
 }));
+
+beforeAll(async () => {
+  await initTestI18n();
+});
 
 describe('CampaignHistory Component', () => {
   let element: CampaignHistory;

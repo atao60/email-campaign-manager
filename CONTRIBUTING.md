@@ -21,7 +21,7 @@ By contributing to `@atao60/personal-mailing-manager`, you agree that your contr
 
 ## Roadmap
 
-- client with i18next
+- i18n for messages between backend and client
 - logger with pino
 - adapter for gmail
 

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeAll } from 'vitest';
 
+import { initTestI18n } from '../test-i18n-setup';
 import { CampaignDashboard } from './campaign-dashboard'; // Imports and registers <campaign-dashboard>
 import { apiClient, type CampaignStatus } from '../api-client';
 
@@ -9,6 +10,10 @@ vi.mock('../api-client', () => ({
     getStatus: vi.fn()
   }
 }));
+
+beforeAll(async () => {
+  await initTestI18n();
+});
 
 describe('CampaignDashboard Component', () => {
   afterEach(() => {
@@ -65,12 +70,12 @@ describe('CampaignDashboard Component', () => {
 
     // Check "Waiting" metric (first card) and its label
     const firstCard = shadow?.querySelector('.metric-card:nth-child(1)');
-    expect(firstCard?.querySelector('.metric-label')?.textContent).toBe('En attente (Waiting)');
+    expect(firstCard?.querySelector('.metric-label')?.textContent).toBe('Waiting');
     expect(firstCard?.querySelector('.metric-value')?.textContent).toBe('15');
 
     // Check "Hard Failures" metric and its label
     const hardFailuresCard = shadow?.querySelector('.hard-failures');
-    expect(hardFailuresCard?.querySelector('.metric-label')?.textContent).toBe('Échecs Permanents (Hard Failures)');
+    expect(hardFailuresCard?.querySelector('.metric-label')?.textContent).toBe('Hard Failures');
     expect(hardFailuresCard?.querySelector('.metric-value')?.textContent).toBe('4');
   });
 
@@ -78,7 +83,6 @@ describe('CampaignDashboard Component', () => {
     // Temporarily swallow console.error because we EXPECT it to throw here
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    // vi.mocked(apiClient.getStatus).mockRejectedValue(new Error('Network Error'));
     vi.mocked(apiClient.getStatus).mockImplementation(() => Promise.reject(new Error('Network Error')));
 
     const element = document.createElement('campaign-dashboard') as CampaignDashboard;
@@ -139,7 +143,7 @@ describe('CampaignDashboard Component', () => {
     // By deliberately NOT appending it to document.body, connectedCallback() never runs,
     // which means this.pollInterval remains null.
 
-    // We manually trigger the disconnect lifecycle to cover the "false" branch of the if statement.
+    // Manually trigger the disconnect lifecycle to cover the "false" branch of the if statement.
     element.disconnectedCallback();
 
     // Assert that it didn't crash and didn't try to clear a non-existent interval

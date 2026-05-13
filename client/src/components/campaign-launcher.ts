@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { customElement, state, query } from 'lit/decorators.js';
+import { t } from 'i18next';
 
 import { apiClient } from '../api-client';
 
@@ -31,12 +32,12 @@ export class CampaignLauncher extends LitElement {
 
     const file = this.fileInput.files?.[0];
     if (!file) {
-      this.statusMessage = { type: 'error', text: 'Please select a CSV file containing your contacts.' };
+      this.statusMessage = { type: 'error', text: t('launcher.selectCsvError') };
       return;
     }
 
     if (!this.subject || !this.templateContent) {
-      this.statusMessage = { type: 'error', text: 'Please fill out all fields.' };
+      this.statusMessage = { type: 'error', text: t('launcher.fillAllFieldsError') };
       return;
     }
 
@@ -57,7 +58,7 @@ export class CampaignLauncher extends LitElement {
       const result = await apiClient.launchCampaign(formData);
       this.statusMessage = {
         type: 'success',
-        text: `Success! Campaign queued for ${result.processed} contacts.`
+        text: t('launcher.successQueued', { count: result.processed })
       };
 
       // Reset form on success
@@ -66,13 +67,13 @@ export class CampaignLauncher extends LitElement {
       this.fileInput.value = '';
     } catch (error: unknown) {
       if (error instanceof Error) {
-        this.statusMessage = { type: 'error', text: error.message || 'Failed to launch campaign.' };
+        this.statusMessage = { type: 'error', text: error.message || t('launcher.failedLaunch') };
       }
       // Fallback for weird cases where someone throws a string or object
       else if (typeof error === 'string') {
-        this.statusMessage = { type: 'error', text: error || 'Failed to launch campaign.' };
+        this.statusMessage = { type: 'error', text: error || t('launcher.failedLaunch') };
       } else {
-        this.statusMessage = { type: 'error', text: 'An unknown error occurred.' };
+        this.statusMessage = { type: 'error', text: t('launcher.unknownError') };
       }
     } finally {
       this.isSubmitting = false;
@@ -81,23 +82,23 @@ export class CampaignLauncher extends LitElement {
 
   render() {
     return html`
-      <h2>Launch New Campaign</h2>
+      <h2>${t('launcher.title')}</h2>
 
       <form @submit=${this.handleSubmit}>
         <div class="form-group">
-          <label for="subject">Email Subject</label>
+          <label for="subject">${t('launcher.emailSubject')}</label>
           <input
             type="text"
             id="subject"
             .value=${this.subject}
             @input=${this.handleSubjectChange}
-            placeholder="e.g., Welcome to our platform!"
+            placeholder=${t('launcher.subjectPlaceholder')}
             required
           />
         </div>
 
         <div class="form-group">
-          <label>Template Source</label>
+          <label>${t('launcher.templateSource')}</label>
           <div class="radio-group">
             <label>
               <input
@@ -107,7 +108,7 @@ export class CampaignLauncher extends LitElement {
                 .checked=${this.templateMode === 'html'}
                 @change=${() => (this.templateMode = 'html')}
               />
-              Raw HTML
+              ${t('launcher.rawHtml')}
             </label>
             <label>
               <input
@@ -117,7 +118,7 @@ export class CampaignLauncher extends LitElement {
                 .checked=${this.templateMode === 'url'}
                 @change=${() => (this.templateMode = 'url')}
               />
-              Remote URL
+              ${t('launcher.remoteUrl')}
             </label>
           </div>
 
@@ -126,7 +127,7 @@ export class CampaignLauncher extends LitElement {
                 <textarea
                   .value=${this.templateContent}
                   @input=${this.handleTemplateContentChange}
-                  placeholder="<h1>Hello {{firstName}}</h1>..."
+                  placeholder=${t('launcher.htmlPlaceholder')}
                   required
                 ></textarea>
               `
@@ -135,19 +136,19 @@ export class CampaignLauncher extends LitElement {
                   type="url"
                   .value=${this.templateContent}
                   @input=${this.handleTemplateContentChange}
-                  placeholder="https://example.com/template.html"
+                  placeholder=${t('launcher.urlPlaceholder')}
                   required
                 />
               `}
         </div>
 
         <div class="form-group">
-          <label for="csv-file">Contacts (CSV File)</label>
+          <label for="csv-file">${t('launcher.contactsCsv')}</label>
           <input type="file" id="csv-file" accept=".csv" required />
         </div>
 
         <button type="submit" ?disabled=${this.isSubmitting}>
-          ${this.isSubmitting ? 'Queueing Campaign...' : 'Launch Campaign 🚀'}
+          ${this.isSubmitting ? t('launcher.queueing') : t('launcher.launch')}
         </button>
       </form>
 

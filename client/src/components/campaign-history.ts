@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { t } from 'i18next';
 
 import type { CampaignDetail, CampaignSummary, EmailDeliveryStatus } from '@campaign-manager/backend';
 import { apiClient } from '../api-client';
@@ -128,25 +129,25 @@ export class CampaignHistory extends LitElement {
 
   renderList() {
     if (this.campaigns.length === 0) {
-      return html`<p>No campaigns found.</p>`;
+      return html`<p>${t('history.none')}</p>`;
     }
 
     const isAnyPending = this.campaigns.some((c) => c.status === 'PARTIAL');
 
     return html`
       <div style="display: flex; justify-content: space-between;">
-        <h2>Campaign History</h2>
-        ${isAnyPending ? html`<span class="live-indicator">● Live Updating</span>` : ''}
+        <h2>${t('history.title')}</h2>
+        ${isAnyPending ? html`<span class="live-indicator">${t('history.live')}</span>` : ''}
       </div>
       ${this.campaigns.map(
         (c) => html`
           <div class="card" @click=${() => this.loadDetails(c.id)}>
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <h3 style="margin: 0 0 0.5rem 0;">${c.subject}</h3>
-              <span class="status-badge ${this.getBadgeClass(c.status)}">${c.status}</span>
+              <span class="status-badge ${this.getBadgeClass(c.status)}">${t('history.status.' + c.status)}</span>
             </div>
             <p style="margin: 0; color: #64748b;">
-              Sent: ${new Date(c.sentDate).toLocaleString()} | Total: ${c.totalSent}
+              ${t('history.sentTotal', { sent: new Date(c.sentDate).toLocaleString(), total: c.totalSent })}
             </p>
           </div>
         `
@@ -160,22 +161,22 @@ export class CampaignHistory extends LitElement {
     if (!c) {
       return html`
         <div class="empty-state">
-          <p>Please select a campaign to view its details.</p>
+          <p>${t('history.selectPrompt')}</p>
         </div>
       `;
     }
 
     return html`
-      <button class="back" @click=${this.handleBackClick}>← Back to List</button>
+      <button class="back" @click=${this.handleBackClick}>${t('history.back')}</button>
       <h2>${c.subject}</h2>
 
       <div style="display: flex; align-items: center; gap: 1rem;">
         <h2>${c.subject}</h2>
-        <span class="status-badge ${this.getBadgeClass(c.status)}">${c.status}</span>
-        ${c.status === 'PARTIAL' ? html`<span class="spinner">↻ Refreshing...</span>` : ''}
+        <span class="status-badge ${this.getBadgeClass(c.status)}">${t('history.status.' + c.status)}</span>
+        ${c.status === 'PARTIAL' ? html`<span class="spinner">${t('history.refreshing')}</span>` : ''}
       </div>
 
-      <h3>Delivery Status (${c.totalSent} total)</h3>
+      <h3>${t('history.deliveryStatus', { count: c.totalSent })}</h3>
       <ul>
         ${c.emails.map(
           (email: EmailDeliveryStatus) => html`
@@ -189,14 +190,14 @@ export class CampaignHistory extends LitElement {
         )}
       </ul>
 
-      <h3>Template Preview</h3>
+      <h3>${t('history.templatePreview')}</h3>
       <iframe srcdoc=${c.htmlContent}></iframe>
     `;
   }
 
   render() {
     if (this.loading) {
-      return html`<p>Loading data...</p>`;
+      return html`<p>${t('history.loading')}</p>`;
     }
 
     return this.selectedCampaign ? this.renderDetails() : this.renderList();

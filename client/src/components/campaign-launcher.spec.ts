@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 
+import { initTestI18n } from '../test-i18n-setup';
 import { CampaignLauncher } from './campaign-launcher'; // Imports and registers the custom element
 import { apiClient } from '../api-client';
 import type { LaunchCampaignResponse } from '@campaign-manager/backend';
@@ -10,6 +11,10 @@ vi.mock('../api-client', () => ({
     launchCampaign: vi.fn()
   }
 }));
+
+beforeAll(async () => {
+  await initTestI18n();
+});
 
 describe('CampaignLauncher Component', () => {
   let element: CampaignLauncher;

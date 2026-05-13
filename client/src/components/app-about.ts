@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
@@ -26,12 +27,9 @@ export class AppAbout extends LitElement {
   render() {
     return html`
       <div class="container">
-        <h2>About Campaign Manager</h2>
-        <p><strong>Version:</strong> 1.0.0</p>
-        <p>
-          This system will manage mailing list merges and tracks asynchronous email campaigns. It will ensure high
-          deliverability and provide detailed tracking of successful deliveries and hard bounces.
-        </p>
+        <h2>${t('app.aboutTitle')}</h2>
+        <p><strong>${t('app.version')}</strong> 1.0.0</p>
+        <p>${t('about.description')}</p>
       </div>
     `;
   }
