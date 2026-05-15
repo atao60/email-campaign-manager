@@ -176,7 +176,7 @@ export class CampaignHistory extends LitElement {
         ${c.status === 'PARTIAL' ? html`<span class="spinner">${t('history.refreshing')}</span>` : ''}
       </div>
 
-      <h3>${t('history.deliveryStatus', { count: c.totalSent })}</h3>
+      <h3>${t('history.deliveryStatus', { total: c.totalSent })}</h3>
       <ul>
         ${c.emails.map(
           (email: EmailDeliveryStatus) => html`

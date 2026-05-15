@@ -1,28 +1,28 @@
 {
-  "cli": {
-    "commands": {
-      "merge": {
-        "description": "Merge multiple CSV mailing lists and remove duplicates",
-        "argOutput": "Output CSV file path",
-        "argInputs": "Input CSV files",
-        "success": "Successfully merged {{count}} lists into {{output}}",
-        "error": "Error: Could not merge lists. Please check your file paths."
-      },
-      "sendCampaign": {
-        "success": "Successfully queued {{count}} emails from {{file}}",
-        "error": "Error: Could not queue the campaign. Please check the logs."
-      },
-      "status": {
-        "description": "View real-time background processing metrics",
-        "header": "Email Queue Status:",
-        "waiting": "  Waiting               : {{count}}",
-        "active": "  Active                : {{count}}",
-        "completed": "  Completed             : {{count}}",
-        "failed": "  Queue Failed          : {{count}}",
-        "separator": "-----------------------------------",
-        "hardFailures": "  Hard Failures         : {{count}}",
-        "error": "Error: Could not retrieve the campaign status."
-      }
+  "commands": {
+    "merge": {
+      "argInputs": "Input CSV files",
+      "argOutput": "Output CSV file path",
+      "description": "Merge multiple CSV mailing lists and remove duplicates",
+      "error": "Error: Could not merge lists. Please check your file paths.",
+      "success_one": "Successfully merged {{count}} list into {{output}}",
+      "success_other": "Successfully merged {{count}} lists into {{output}}"
+    },
+    "sendCampaign": {
+      "error": "Error: Could not queue the campaign. Please check the logs.",
+      "success_one": "Successfully queued {{count}} email from {{file}}",
+      "success_other": "Successfully queued {{count}} emails from {{file}}"
+    },
+    "status": {
+      "active": "  Active                : {{total}}",
+      "completed": "  Completed             : {{total}}",
+      "error": "Error: Could not retrieve the campaign status.",
+      "failed": "  Queue Failed          : {{total}}",
+      "hardFailures": "  Hard Failures         : {{total}}",
+      "header": "Email Queue Status:",
+      "separator": "-----------------------------------",
+      "waiting": "  Waiting               : {{total}}",
+      "description": "View real-time background processing metrics"
     }
   }
 }

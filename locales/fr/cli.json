@@ -1,30 +1,32 @@
 {
-  "cli": {
-    "commands": {
-      "merge": {
-        "description": "Fusionne plusieurs listes de diffusion CSV et supprime les doublons",
-        "argOutput": "Chemin du fichier CSV de sortie",
-        "argInputs": "Fichiers CSV d’entrée",
-        "success": "Fusion réussie de {{count}} listes dans {{output}}",
-        "error": "Erreur\u00A0: impossible de fusionner les listes. Veuillez vérifier les chemins de vos fichiers."
-      },
-      "sendCampaign": {
-        "description": "Lit les contacts d’un fichier CSV et leur envoie un e-mail de campagne",
-        "argCsvFile": "Chemin vers la liste de contacts CSV",
-        "success": "{{count}} e-mails mis en file d’attente avec succès à partir de {{file}}. Le traitement se fera en arrière-plan.",
-        "error": "Erreur\u00A0: Impossible de mettre la campagne en file d’attente. Veuillez consulter les journaux."
-      },
-      "status": {
-        "description": "Affiche les métriques de traitement en arrière-plan en temps réel",
-        "header": "Statut de la file d’attente d'e-mails\u00A0:",
-        "waiting": "  En attente            : {{count}}",
-        "active": "  En cours              : {{count}}",
-        "completed": "  Terminés              : {{count}}",
-        "failed": "  Échecs (File)         : {{count}}",
-        "separator": "-----------------------------------",
-        "hardFailures": "  Échecs permanents     : {{count}}",
-        "error": "Erreur\u00A0: Impossible de récupérer le statut de la campagne."
-      }
+  "commands": {
+    "merge": {
+      "argInputs": "Fichiers CSV d’entrée",
+      "argOutput": "Chemin du fichier CSV de sortie",
+      "description": "Fusionne plusieurs listes de diffusion CSV et supprime les doublons",
+      "error": "Erreur\u00A0: impossible de fusionner les listes. Veuillez vérifier les chemins de vos fichiers.",
+      "success_one": "Fusion réussie de {{count}} liste dans {{output}}",
+      "success_many": "Fusion réussie de {{count}} listes dans {{output}}",
+      "success_other": "commands.merge.success_other"
+    },
+    "sendCampaign": {
+      "error": "Erreur\u00A0: Impossible de mettre la campagne en file d’attente. Veuillez consulter les journaux.",
+      "success_one": "{{count}} e-mail mis en file d’attente avec succès à partir de {{file}}. Le traitement se fera en arrière-plan.",
+      "success_many": "{{count}} e-mails mis en file d’attente avec succès à partir de {{file}}. Le traitement se fera en arrière-plan.",
+      "success_other": "commands.sendCampaign.success_other",
+      "description": "Lit les contacts d’un fichier CSV et leur envoie un e-mail",
+      "argCsvFile": "Chemin vers la liste de contacts CSV"
+    },
+    "status": {
+      "active": "  En cours              : {{total}}",
+      "completed": "  Terminés              : {{total}}",
+      "error": "Erreur\u00A0: Impossible de récupérer le statut de la campagne.",
+      "failed": "  Échecs (File)         : {{total}}",
+      "hardFailures": "  Échecs permanents     : {{total}}",
+      "header": "Statut de la file d’attente d'e-mails\u00A0:",
+      "separator": "-----------------------------------",
+      "waiting": "  En attente            : {{total}}",
+      "description": "Affiche les métriques de traitement en arrière-plan en temps réel"
     }
   }
 }

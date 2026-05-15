@@ -1,64 +1,66 @@
 {
-  "common": {
-    "colon": "\u00a0:"
+  "about": {
+    "description": "Ce système gère les fusions de listes de diffusion et suit les campagnes e-mail asynchrones. Il aide à assurer une bonne délivrabilité et fournit un suivi détaillé des livraisons réussies et des rebonds permanents."
   },
   "app": {
-    "name": "Gestionnaire de mailings",
     "aboutTitle": "À propos de ce gestionnaire de mailings",
+    "name": "Gestionnaire de mailings",
     "version": "Version"
   },
-  "nav": {
-    "dashboard": "Tableau de bord",
-    "launcher": "Lancer une campagne 🚀",
-    "history": "Historique",
-    "about": "À propos"
-  },
   "dashboard": {
-    "title": "Statut de la file d’attente de campagne",
-    "errorBackend": "Impossible de se connecter à l’API backend.",
-    "loading": "Chargement des métriques...",
-    "waiting": "En attente",
     "active": "En cours",
     "completed": "Terminés",
+    "errorBackend": "Impossible de se connecter à l’API backend.",
+    "hardFailures": "Échecs permanents",
     "queueFailed": "Échecs mise en attente",
-    "hardFailures": "Échecs permanents"
-  },
-  "launcher": {
-    "title": "Lancer une nouvelle campagne",
-    "selectCsvError": "Veuillez sélectionner un fichier CSV contenant vos contacts.",
-    "fillAllFieldsError": "Veuillez remplir tous les champs.",
-    "successQueued": "Succès\u00a0! Campagne mise en file d’attente pour {{count}} contacts.",
-    "failedLaunch": "Échec du lancement de la campagne.",
-    "unknownError": "Une erreur inconnue s’est produite.",
-    "emailSubject": "Objet de l’e-mail",
-    "subjectPlaceholder": "ex. Bienvenue sur notre plateforme\u00a0!",
-    "templateSource": "Source du modèle",
-    "rawHtml": "HTML brut",
-    "remoteUrl": "URL distante",
-    "htmlPlaceholder": "<h1>Bonjour {{firstName}}</h1>...",
-    "urlPlaceholder": "https://example.com/template.html",
-    "contactsCsv": "Contacts (fichier CSV)",
-    "queueing": "Mise en file d’attente de la campagne...",
-    "launch": "Lancer la campagne 🚀"
+    "title": "Statut de la file d’attente des campagnes",
+    "waiting": "En attente",
+    "loading": "Chargement des métriques..."
   },
   "history": {
-    "none": "Aucune campagne trouvée.",
-    "title": "Historique des campagnes",
-    "live": "● Mise à jour en direct",
-    "sentTotal": "Envoyés\u00a0: {{sent}} | Total\u00a0: {{total}}",
-    "selectPrompt": "Veuillez sélectionner une campagne pour voir ses détails.",
     "back": "← Retour à la liste",
-    "refreshing": "↻ Actualisation...",
-    "deliveryStatus": "Statut de livraison ({{count}} au total)",
-    "templatePreview": "Aperçu du modèle",
+    "deliveryStatus": "Statut de livraison ({{total}} au total)",
+    "live": "● Mise à jour en direct",
     "loading": "Chargement des données...",
+    "none": "Aucune campagne trouvée.",
+    "refreshing": "↻ Actualisation...",
+    "selectPrompt": "Veuillez sélectionner une campagne pour voir ses détails.",
+    "sentTotal": "Envoyés\u00A0: {{sent}} | Total\u00A0: {{total}}",
+    "templatePreview": "Aperçu du modèle",
+    "title": "Historique des campagnes",
     "status": {
       "PARTIAL": "EN COURS",
       "COMPLETED": "TERMINÉS",
       "FAILED": "EN ÉCHEC"
     }
   },
-  "about": {
-    "description": "Ce système gère les fusions de listes de diffusion et suit les campagnes e-mail asynchrones. Il aide à assurer une bonne délivrabilité et fournit un suivi détaillé des livraisons réussies et des rebonds permanents."
+  "launcher": {
+    "contactsCsv": "Contacts (fichier CSV)",
+    "emailSubject": "Objet de l’e-mail",
+    "failedLaunch": "Échec du lancement de la campagne.",
+    "fillAllFieldsError": "Veuillez remplir tous les champs.",
+    "htmlPlaceholder": "<h1>Bonjour {{firstName}}</h1>...",
+    "launch": "Lancer la campagne 🚀",
+    "queueing": "Mise en file d’attente de la campagne...",
+    "rawHtml": "HTML brut",
+    "remoteUrl": "URL distante",
+    "selectCsvError": "Veuillez sélectionner un fichier CSV contenant vos contacts.",
+    "subjectPlaceholder": "ex. Bienvenue sur notre plateforme\u00A0!",
+    "successQueued_one": "Succès\u00A0! Campagne mise en file d’attente pour {{count}} contact.",
+    "successQueued_many": "Succès\u00A0! Campagne mise en file d’attente pour {{count}} contacts.",
+    "successQueued_other": "launcher.successQueued_other",
+    "templateSource": "Source du modèle",
+    "title": "Lancer une nouvelle campagne",
+    "unknownError": "Une erreur inconnue s’est produite.",
+    "urlPlaceholder": "https://example.com/template.html"
+  },
+  "nav": {
+    "about": "À propos",
+    "dashboard": "Tableau de bord",
+    "history": "Historique",
+    "launcher": "Lancer une campagne 🚀"
+  },
+  "common": {
+    "colon": "\u00A0:"
   }
 }

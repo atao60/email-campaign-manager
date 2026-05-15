@@ -13,11 +13,13 @@ export async function startCli(container: DiContainer): Promise<void> {
 
   await i18n.init();
 
+  const t = i18n.translate;
+
   program
     .command('merge')
-    .description(i18n.translate('cli.commands.merge.description'))
-    .argument('<output>', i18n.translate('cli.commands.merge.argOutput'))
-    .argument('<inputs...>', i18n.translate('cli.commands.merge.argInputs'))
+    .description(t('cli:commands.merge.description'))
+    .argument('<output>', t('cli:commands.merge.argOutput'))
+    .argument('<inputs...>', t('cli:commands.merge.argInputs'))
     .option('-v, --verbose', 'Output internal telemetry')
     .action(async (output, inputs, options) => {
       const useCase = container.resolve(DI_TYPES.MergeMailingListsUseCase);
@@ -30,13 +32,13 @@ export async function startCli(container: DiContainer): Promise<void> {
         await useCase.execute(inputs, output);
 
         // UI Output: Clean, semantic, and localized output for direct communication to the user
-        outputService.success('cli.commands.merge.success', { count: inputs.length, output });
+        outputService.success('cli:commands.merge.success', { count: inputs.length, output });
       } catch (error) {
         // Telemetry: Record the exact stack trace and metadata for the developers
         logger.error('Merge operation failed fatally', error);
 
         // Semantic, localized error UI Output: A friendly, clean error message for the user
-        outputService.error('cli.commands.merge.error');
+        outputService.error('cli:commands.merge.error');
         process.exit(1);
       }
     });
@@ -54,13 +56,13 @@ export async function startCli(container: DiContainer): Promise<void> {
       try {
         const count = await useCase.execute(csvFile, subject, { html });
 
-        outputService.success('cli.commands.sendCampaign.success', { count: count.toString(), file: csvFile });
+        outputService.success('cli:commands.sendCampaign.success', { count: count.toString(), file: csvFile });
 
         // Brief timeout to ensure BullMQ flushes the jobs to Redis before Node exits
         setTimeout(() => process.exit(0), 1000);
       } catch (error) {
         logger.error('Failed to queue campaign', error);
-        outputService.error('cli.commands.sendCampaign.error');
+        outputService.error('cli:commands.sendCampaign.error');
         process.exit(1);
       }
     });
@@ -74,20 +76,18 @@ export async function startCli(container: DiContainer): Promise<void> {
       try {
         const status = await useCase.execute();
 
-        outputService.info('cli.commands.status.header');
-        outputService.raw(i18n.translate('cli.commands.status.waiting', { count: status.waiting.toString() }));
-        outputService.raw(i18n.translate('cli.commands.status.active', { count: status.active.toString() }));
-        outputService.raw(i18n.translate('cli.commands.status.completed', { count: status.completed.toString() }));
-        outputService.raw(i18n.translate('cli.commands.status.failed', { count: status.failed.toString() }));
-        outputService.raw(i18n.translate('cli.commands.status.separator'));
-        outputService.raw(
-          i18n.translate('cli.commands.status.hardFailures', { count: status.hardFailures.toString() })
-        );
+        outputService.info('cli:commands.status.header');
+        outputService.raw(t('cli:commands.status.waiting', { total: status.waiting.toString() }));
+        outputService.raw(t('cli:commands.status.active', { total: status.active.toString() }));
+        outputService.raw(t('cli:commands.status.completed', { total: status.completed.toString() }));
+        outputService.raw(t('cli:commands.status.failed', { total: status.failed.toString() }));
+        outputService.raw(t('cli:commands.status.separator'));
+        outputService.raw(t('cli:commands.status.hardFailures', { total: status.hardFailures.toString() }));
 
         process.exit(0);
       } catch (error) {
         logger.error('Failed to retrieve status', error);
-        outputService.error('cli.commands.status.error');
+        outputService.error('cli:commands.status.error');
         process.exit(1);
       }
     });

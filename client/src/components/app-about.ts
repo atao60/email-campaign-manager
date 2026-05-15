@@ -28,7 +28,7 @@ export class AppAbout extends LitElement {
     return html`
       <div class="container">
         <h2>${t('app.aboutTitle')}</h2>
-        <p><strong>${t('app.version')}</strong> 1.0.0</p>
+        <p><strong>${t('web:app.version')}</strong> 1.0.0</p>
         <p>${t('about.description')}</p>
       </div>
     `;

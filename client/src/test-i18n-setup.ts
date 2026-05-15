@@ -39,7 +39,7 @@ const webEn = {
     selectPrompt: 'Please select a campaign to view its details.',
     back: '← Back to List',
     refreshing: '↻ Refreshing...',
-    deliveryStatus: 'Delivery Status ({{count}} total)',
+    deliveryStatus: 'Delivery Status ({{total}} total)',
     templatePreview: 'Template Preview',
     loading: 'Loading data...'
   },

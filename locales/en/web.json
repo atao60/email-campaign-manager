@@ -1,59 +1,60 @@
 {
-  "common": {
-    "colon": ":"
-  },
-  "app": {
-    "name": "Campaign Manager",
-    "aboutTitle": "About Campaign Manager",
-    "version": "Version"
-  },
-  "nav": {
-    "dashboard": "Dashboard",
-    "launcher": "Launch Campaign 🚀",
-    "history": "History",
-    "about": "About"
-  },
-  "dashboard": {
-    "title": "Campaign Queue Status",
-    "errorBackend": "Failed to connect to the backend API.",
-    "loading": "Loading metrics...",
-    "waiting": "Waiting",
-    "active": "Active",
-    "completed": "Completed",
-    "queueFailed": "Queue Failed",
-    "hardFailures": "Hard Failures"
-  },
-  "launcher": {
-    "title": "Launch New Campaign",
-    "selectCsvError": "Please select a CSV file containing your contacts.",
-    "fillAllFieldsError": "Please fill out all fields.",
-    "successQueued": "Success! Campaign queued for {{count}} contacts.",
-    "failedLaunch": "Failed to launch campaign.",
-    "unknownError": "An unknown error occurred.",
-    "emailSubject": "Email Subject",
-    "subjectPlaceholder": "e.g., Welcome to our platform!",
-    "templateSource": "Template Source",
-    "rawHtml": "Raw HTML",
-    "remoteUrl": "Remote URL",
-    "htmlPlaceholder": "<h1>Hello {{firstName}}</h1>...",
-    "urlPlaceholder": "https://example.com/template.html",
-    "contactsCsv": "Contacts (CSV File)",
-    "queueing": "Queueing Campaign...",
-    "launch": "Launch Campaign 🚀"
-  },
-  "history": {
-    "none": "No campaigns found.",
-    "title": "Campaign History",
-    "live": "● Live Updating",
-    "sentTotal": "Sent: {{sent}} | Total: {{total}}",
-    "selectPrompt": "Please select a campaign to view its details.",
-    "back": "← Back to List",
-    "refreshing": "↻ Refreshing...",
-    "deliveryStatus": "Delivery Status ({{count}} total)",
-    "templatePreview": "Template Preview",
-    "loading": "Loading data..."
-  },
   "about": {
     "description": "This system manages mailing list merges and tracks asynchronous email campaigns. It helps ensure high deliverability and provides detailed tracking of successful deliveries and hard bounces."
+  },
+  "app": {
+    "aboutTitle": "About Campaign Manager",
+    "name": "Campaign Manager",
+    "version": "Version"
+  },
+  "dashboard": {
+    "active": "Active",
+    "completed": "Completed",
+    "errorBackend": "Failed to connect to the backend API.",
+    "hardFailures": "Hard Failures",
+    "queueFailed": "Queue Failed",
+    "title": "Campaign Queue Status",
+    "waiting": "Waiting",
+    "loading": "Loading metrics..."
+  },
+  "history": {
+    "back": "← Back to List",
+    "deliveryStatus": "Delivery Status ({{total}} in all)",
+    "live": "● Live Updating",
+    "loading": "Loading data...",
+    "none": "No campaigns found.",
+    "refreshing": "↻ Refreshing...",
+    "selectPrompt": "Please select a campaign to view its details.",
+    "sentTotal": "Sent: {{sent}} | Total: {{total}}",
+    "templatePreview": "Template Preview",
+    "title": "Campaign History"
+  },
+  "launcher": {
+    "contactsCsv": "Contacts (CSV File)",
+    "emailSubject": "Email Subject",
+    "failedLaunch": "Failed to launch campaign.",
+    "fillAllFieldsError": "Please fill out all fields.",
+    "htmlPlaceholder": "<h1>Hello {{firstName}}</h1>...",
+    "launch": "Launch Campaign 🚀",
+    "queueing": "Queueing Campaign...",
+    "rawHtml": "Raw HTML",
+    "remoteUrl": "Remote URL",
+    "selectCsvError": "Please select a CSV file containing your contacts.",
+    "subjectPlaceholder": "e.g., Welcome to our platform!",
+    "successQueued_one": "Success! Campaign queued for {{count}} contact.",
+    "successQueued_other": "Success! Campaign queued for {{count}} contacts.",
+    "templateSource": "Template Source",
+    "title": "Launch New Campaign",
+    "unknownError": "An unknown error occurred.",
+    "urlPlaceholder": "https://example.com/template.html"
+  },
+  "nav": {
+    "about": "About",
+    "dashboard": "Dashboard",
+    "history": "History",
+    "launcher": "Launch Campaign 🚀"
+  },
+  "common": {
+    "colon": ":"
   }
 }

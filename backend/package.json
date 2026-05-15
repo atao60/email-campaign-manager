@@ -21,7 +21,7 @@
     "start": "node dist/main.js",
     "lint": "eslint .",
     "build:debug": "npx tsup --watch --onSuccess \"node --inspect dist/main.js\"",
-    "i18n:extract": "i18next-parser --config i18next-parser.config.js",
+    "i18n:extract": "i18next-cli extract --config i18next-cli.config.ts",
     "license-check": "license-checker-rseidelsohn --summary",
     "dev:redis": "tsx scripts/local-redis.ts",
     "gen:rest:api": "tsoa spec-and-routes --tsconfig tsconfig.json"
@@ -53,7 +53,7 @@
     "@types/nodemailer": "^8.0.0",
     "@vitest/coverage-v8": "^4.1.5",
     "concurrently": "^9.2.1",
-    "i18next-cli": "^1.56.2",
+    "i18next-cli": "^1.56.12",
     "license-checker-rseidelsohn": "^4.4.2",
     "maildev": "^2.2.1",
     "redis-memory-server": "^0.16.1",
