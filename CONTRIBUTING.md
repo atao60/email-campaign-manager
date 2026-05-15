@@ -21,15 +21,24 @@ By contributing to `@atao60/personal-mailing-manager`, you agree that your contr
 
 ## Roadmap
 
+- adapter for gmail
+- mode staging: run locally by send to external smtp
 - i18n for messages between backend and client
 - logger with pino
-- adapter for gmail
+- code analyse tools
+- form to update contacts files
 
 ## Code Overview
 
 ### Tools
 
-**_TBD_**
+- [VSC](https://code.visualstudio.com/) as [IDE](https://en.wikipedia.org/wiki/Integrated_development_environment)
+- [GIT](https://git-scm.com/) as [VCS](https://en.wikipedia.org/wiki/Version_control)
+- [Vite](https://vite.dev/) as build tool
+- [Vitest](https://vitest.dev/) for testing
+- [prettier](https://prettier.io/) & [eslint](https://eslint.org/) for QA
+- license-checker-rseidelsohn for licenses checking
+- mainly [Google Gemini Pro](https://gemini.google.com/) and [ChatGPT Codex](https://chatgpt.com/codex) as [AI](https://en.wikipedia.org/wiki/Artificial_intelligence).
 
 ### Design
 

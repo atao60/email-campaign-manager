@@ -1,0 +1,32 @@
+{
+  "production": true,
+  "summary": false,
+  "workspaces": [".", "client", "backend"],
+  "out": "DEPENDENCIES-LICENSES",
+  "htmlOut": "",
+  "files": "",
+  "plainVertical": false,
+  "allowedLicenses": [
+    "MIT",
+    "MIT-0",
+    "ISC",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "0BSD",
+    "Unlicense",
+    "CC0-1.0",
+    "CC-BY-3.0",
+    "MPL-2.0",
+    "LGPL-3.0",
+    "LGPL-2.1",
+    "GPL-3.0",
+    "AGPL-3.0",
+    "Public Domain",
+    "OFL-1.1",
+    "OFL-1.1-no-RFN",
+    "Python-2.0",
+    "BlueOak-1.0.0"
+  ],
+  "excludedPackages": ["@atao60/email-campaign-manager-root", "@campaign-manager/backend", "@campaign-manager/client"]
+}

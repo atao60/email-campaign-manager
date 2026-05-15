@@ -24,7 +24,8 @@
     "i18n:extract": "i18next-cli extract --config i18next-cli.config.ts",
     "license-check": "license-checker-rseidelsohn --summary",
     "dev:redis": "tsx scripts/local-redis.ts",
-    "gen:rest:api": "tsoa spec-and-routes --tsconfig tsconfig.json"
+    "gen:rest:api": "tsoa spec-and-routes --tsconfig tsconfig.json",
+    "tree": "npx tree-console -d ./src"
   },
   "type": "module",
   "dependencies": {

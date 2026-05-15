@@ -142,8 +142,11 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
-
+# atao60/email-campaign-manager files
 .archives/
 generated/
 tmp/
 **/data/history/
+DEPENDENCIES-LICENSES*
+licenses
+third-party-notices.*
