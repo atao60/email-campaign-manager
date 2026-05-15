@@ -37,6 +37,7 @@ By contributing to `@atao60/personal-mailing-manager`, you agree that your contr
 - [Vite](https://vite.dev/) as build tool
 - [Vitest](https://vitest.dev/) for testing
 - [prettier](https://prettier.io/) & [eslint](https://eslint.org/) for QA
+- [@ysk8hori/typescript-graph (tsg)](https://github.com/ysk8hori/typescript-graph) with [mermaid](https://mermaid.js.org/) for dependency diagram
 - license-checker-rseidelsohn for licenses checking
 - mainly [Google Gemini Pro](https://gemini.google.com/) and [ChatGPT Codex](https://chatgpt.com/codex) as [AI](https://en.wikipedia.org/wiki/Artificial_intelligence).
 
@@ -109,6 +110,19 @@ We follow the **Conventional Commits** specification. Please format your commit 
 
 **Example:**
 `feat(compiler): add support for nested repeat loops`
+
+### Audits
+
+#### Dependency audit
+
+Run:
+
+```bash
+npm run npm run analyse:code:deps:all
+
+```
+
+Then display the files `client-graph.svg` and `backend-graph.svg`.
 
 ### Cross Platform Concerns
 

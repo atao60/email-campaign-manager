@@ -150,3 +150,6 @@ tmp/
 DEPENDENCIES-LICENSES*
 licenses
 third-party-notices.*
+client-graph.*
+backend-graph.*
+bundle-stats.html
