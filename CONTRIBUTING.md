@@ -25,8 +25,8 @@ By contributing to `@atao60/personal-mailing-manager`, you agree that your contr
 - mode staging: run locally by send to external smtp
 - i18n for messages between backend and client
 - logger with pino
-- code analyse tools
 - form to update contacts files
+- List of exclusions (expired, refused, ...)
 
 ## Code Overview
 
@@ -38,7 +38,8 @@ By contributing to `@atao60/personal-mailing-manager`, you agree that your contr
 - [Vitest](https://vitest.dev/) for testing
 - [prettier](https://prettier.io/) & [eslint](https://eslint.org/) for QA
 - [@ysk8hori/typescript-graph (tsg)](https://github.com/ysk8hori/typescript-graph) with [mermaid](https://mermaid.js.org/) for dependency diagram
-- license-checker-rseidelsohn for licenses checking
+- [rollup-plugin-visualizer](https://github.com/btd/rollup-plugin-visualizer) & [vite-bundle-visualizer](https://github.com/KusStar/vite-bundle-visualizer) for bundle size management
+- [license-checker-rseidelsohn](https://github.com/RSeidelsohn/license-checker-rseidelsohn) for licenses checking
 - mainly [Google Gemini Pro](https://gemini.google.com/) and [ChatGPT Codex](https://chatgpt.com/codex) as [AI](https://en.wikipedia.org/wiki/Artificial_intelligence).
 
 ### Design
@@ -123,6 +124,15 @@ npm run npm run analyse:code:deps:all
 ```
 
 Then display the files `client-graph.svg` and `backend-graph.svg`.
+
+#### Client bundle vizualizer
+
+Two tools are available:
+
+- rollup-plugin-visualizer to be integrated in a CI/CD process,
+- vite-bundle-visualizer to be run manually with the script `analyse:bundle`.
+
+Both do the same thing: they will automatically open a tab under the current browser and generate a file `./bundle-stats.html`.
 
 ### Cross Platform Concerns
 

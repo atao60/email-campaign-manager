@@ -28,6 +28,7 @@
     "tree:web": "npm run tree -w @campaign-manager/client",
     "audit:licenses": "tsx scripts/audit-licenses.ts --summary",
     "tsg": "tsg",
+    "analyse:bundle": "npm run analyse:bundle -w @campaign-manager/client",
     "analyse:code:deps:all": "npm run analyse:code:backend:deps:all && npm run analyse:code:client:deps:all",
     "analyse:code:backend": "tsg -d ./backend/src --exclude test stories node_modules generated .spec.",
     "analyse:code:backend:deps": "npm run analyse:code:backend -- --stdout deps --md backend-graph.md",
@@ -43,11 +44,10 @@
     "analyse:code:client:deps:svg": "npm run analyse:code:client:deps | npx tsx ./scripts/keep-only-mermaid.ts | mmdc -c ./mermaid-config.json -p ./puppeteer-config.json -i - -o client-graph.svg && npm run analyse:code:client:deps:clean-md",
     "analyse:code:client:deps:pdf": "npm run analyse:code:client:deps | npx tsx ./scripts/keep-only-mermaid.ts | mmdc -c ./mermaid-config.json -p ./puppeteer-config.json --outputFormat=pdf --pdfFit -i - -o client-graph.pdf && npm run analyse:code:client:deps:clean-md",
     "analyse:code:client:deps:all": "npm run analyse:code:client:deps:out && npm run analyse:code:client:deps:svg && npm run analyse:code:client:deps:pdf",
-    "analyse:bundle": "vite-bundle-visualizer",
     "i18n:extract": "npm run i18n:migrate && npm run i18n:extract-web && npm run i18n:extract-cli && npm run i18n:restore",
     "i18n:migrate": "tsx scripts/i18n-migrate-to-shadow.ts",
-    "i18n:extract-web": "npm run i18n:extract  -w @campaign-manager/client",
-    "i18n:extract-cli": "npm run i18n:extract  -w @campaign-manager/backend",
+    "i18n:extract-web": "npm run i18n:extract -w @campaign-manager/client",
+    "i18n:extract-cli": "npm run i18n:extract -w @campaign-manager/backend",
     "i18n:restore": "tsx scripts/i18n-restore.ts"
   },
   "devDependencies": {

@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vitest/config';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { normalizePath } from 'vite';
 import litCss from 'vite-plugin-lit-css';
 import path from 'node:path';
@@ -20,7 +21,8 @@ export default defineConfig({
           dest: ''
         }
       ]
-    })
+    }),
+    visualizer({ open: true, filename: 'bundle-stats.html' })
   ],
   resolve: {
     tsconfigPaths: true
