@@ -56,7 +56,6 @@
     "@eslint/js": "^10.0.1",
     "@mermaid-js/mermaid-cli": "^11.15.0",
     "@release-it/conventional-changelog": "^11.0.0",
-    "@types/async-lock": "^1.4.2",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^25.7.0",
     "@ysk8hori/typescript-graph": "^0.26.5",
@@ -101,8 +100,5 @@
       "nodemailer": "^8.0.5"
     },
     "glob": "^13.0.0"
-  },
-  "dependencies": {
-    "async-lock": "^1.4.1"
   }
 }

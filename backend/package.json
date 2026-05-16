@@ -29,6 +29,7 @@
   },
   "type": "module",
   "dependencies": {
+    "async-lock": "^1.4.1",
     "bullmq": "^5.76.2",
     "commander": "^14.0.3",
     "cors": "^2.8.6",
@@ -49,6 +50,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/async-lock": "^1.4.2",
     "@types/express": "^5.0.6",
     "@types/node": "^25.6.0",
     "@types/nodemailer": "^8.0.0",
