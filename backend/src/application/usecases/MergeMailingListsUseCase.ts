@@ -1,5 +1,5 @@
 import { type Contact } from '@domain/models/Contact';
-import { type CsvPort } from '@domain/ports/CsvPort';
+import { type CsvPort } from '@domain/ports';
 
 export class MergeMailingListsUseCase {
   constructor(private readonly csvAdapter: CsvPort) {}

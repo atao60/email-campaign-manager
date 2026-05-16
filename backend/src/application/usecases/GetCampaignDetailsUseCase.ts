@@ -1,5 +1,5 @@
 import type { SentCampaign } from '@domain/models/Campaign';
-import type { CampaignHistoryRepository } from '@domain/repositories/CampaignHistoryRepository';
+import type { CampaignHistoryRepository } from '@domain/repositories';
 
 export class GetCampaignDetailsUseCase {
   constructor(private readonly campaignHistoryRepo: CampaignHistoryRepository) {}

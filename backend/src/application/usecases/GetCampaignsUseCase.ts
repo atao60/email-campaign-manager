@@ -1,5 +1,5 @@
-import type { CampaignHistoryRepository } from '@domain/repositories/CampaignHistoryRepository';
-import type { CampaignSummary } from '@presentation/rest/dto/CampaignDTO';
+import type { CampaignHistoryRepository } from '@domain/repositories';
+import type { CampaignSummary } from '@presentation/rest/dto';
 
 export class GetCampaignsUseCase {
   constructor(private readonly campaignHistoryRepo: CampaignHistoryRepository) {}

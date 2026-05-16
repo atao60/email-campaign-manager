@@ -1,6 +1,6 @@
 import { error, log, warn } from 'node:console';
 
-import { type LoggerPort } from '@domain/ports/LoggerPort';
+import { type LoggerPort } from '@domain/ports';
 
 export class ConsoleLogger implements LoggerPort {
   public info(message: string, ...meta: unknown[]): void {

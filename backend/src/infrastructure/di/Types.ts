@@ -1,16 +1,13 @@
-import type { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
-import type { GetCampaignStatusUseCase } from '@application/usecases/GetCampaignStatusUseCase';
-import type { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
-import type { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
-import type { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
-import type { UpdateDeliveryStatusUseCase } from '@application/usecases/UpdateDeliveryStatusUseCase';
-import type { CsvPort } from '@domain/ports/CsvPort';
-import type { EmailPort } from '@domain/ports/EmailPort';
-import type { LanguagePort } from '@domain/ports/LanguagePort';
-import type { LoggerPort } from '@domain/ports/LoggerPort';
-import type { QueueMonitorPort } from '@domain/ports/QueueMonitorPort';
-import type { CampaignHistoryRepository } from '@domain/repositories/CampaignHistoryRepository';
-import type { FailedEmailRepository } from '@domain/repositories/FailedEmailRepository';
+import type {
+  GetCampaignDetailsUseCase,
+  GetCampaignStatusUseCase,
+  GetCampaignsUseCase,
+  MergeMailingListsUseCase,
+  SendCampaignUseCase,
+  UpdateDeliveryStatusUseCase
+} from '@application/usecases';
+import type { CsvPort, EmailPort, LanguagePort, LoggerPort, QueueMonitorPort } from '@domain/ports';
+import type { CampaignHistoryRepository, FailedEmailRepository } from '@domain/repositories';
 import type { CliOutputService } from '@presentation/cli/services/CliOutputService';
 
 /**

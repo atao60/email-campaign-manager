@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { cwd } from 'node:process';
-import { type LanguagePort } from '@domain/ports/LanguagePort';
+import { type LanguagePort } from '@domain/ports';
 
 export const DEFAULT_LANGUAGE = 'fr';
 

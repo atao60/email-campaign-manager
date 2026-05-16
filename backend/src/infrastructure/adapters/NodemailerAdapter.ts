@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer';
-import { type EmailPort, type EmailMessageDto } from '@domain/ports/EmailPort';
 import { type Contact } from '@domain/models/Contact';
-import { type LoggerPort } from '@domain/ports/LoggerPort';
+import type { EmailPort, EmailMessageDto, LoggerPort } from '@domain/ports';
 
 /**
  * ==========================================

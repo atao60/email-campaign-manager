@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq';
 import Redis from 'ioredis';
 
-import { type EmailPort, type EmailMessageDto } from '@domain/ports/EmailPort';
+import { type EmailPort, type EmailMessageDto } from '@domain/ports';
 import { type Contact } from '@domain/models/Contact';
 
 /**

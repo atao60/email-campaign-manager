@@ -1,5 +1,5 @@
-import { type QueueMonitorPort } from '@domain/ports/QueueMonitorPort';
-import { type FailedEmailRepository } from '@domain/repositories/FailedEmailRepository';
+import { type QueueMonitorPort } from '@domain/ports';
+import { type FailedEmailRepository } from '@domain/repositories';
 import { type CampaignStatus } from '@domain/models/CampaignStatus';
 
 export class GetCampaignStatusUseCase {

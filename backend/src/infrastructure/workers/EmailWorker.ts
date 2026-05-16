@@ -2,11 +2,10 @@ import { Worker, type Job } from 'bullmq';
 import Redis from 'ioredis';
 import { randomUUID } from 'node:crypto';
 
-import { type EmailPort } from '@domain/ports/EmailPort';
-import { type LoggerPort } from '@domain/ports/LoggerPort';
+import type { EmailPort, LoggerPort } from '@domain/ports';
+import { type FailedEmailRepository } from '@domain/repositories';
 import { Contact } from '@domain/models/Contact';
 import { type ContactId, type FailedEmailId } from '@domain/models/BrandedTypes';
-import { type FailedEmailRepository } from '@domain/repositories/FailedEmailRepository';
 import { FailedEmail } from '@domain/models/FailedEmail';
 
 /**

@@ -1,4 +1,4 @@
-import { type LanguagePort } from '@domain/ports/LanguagePort';
+import { type LanguagePort } from '@domain/ports';
 
 /**
  * Standardizes and translates user-facing output for the Command Line Interface.

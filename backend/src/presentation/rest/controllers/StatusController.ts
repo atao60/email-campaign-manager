@@ -1,6 +1,6 @@
 import { Controller, Get, Route, SuccessResponse, Res, type TsoaResponse } from 'tsoa';
 
-import { GetCampaignStatusUseCase } from '@application/usecases/GetCampaignStatusUseCase';
+import { GetCampaignStatusUseCase } from '@application/usecases';
 import { type CampaignStatus } from '@domain/models/CampaignStatus';
 
 @Route('api/status')

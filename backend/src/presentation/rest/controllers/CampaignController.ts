@@ -16,11 +16,13 @@ import { cwd } from 'node:process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 
 import type { CampaignSummary, CampaignDetail, LaunchCampaignResponse } from '../dto/CampaignDTO';
-import type { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
-import type { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
-import type { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
-import type { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
-import type { UpdateDeliveryStatusUseCase } from '@application/usecases/UpdateDeliveryStatusUseCase';
+import type {
+  MergeMailingListsUseCase,
+  GetCampaignDetailsUseCase,
+  UpdateDeliveryStatusUseCase,
+  SendCampaignUseCase,
+  GetCampaignsUseCase
+} from '@application/usecases/';
 
 interface MergePayload {
   inputs: string[];

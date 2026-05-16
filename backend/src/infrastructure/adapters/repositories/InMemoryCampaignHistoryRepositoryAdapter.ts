@@ -1,5 +1,5 @@
 import type { SentCampaign } from '@domain/models/Campaign';
-import type { CampaignHistoryRepository } from '@domain/repositories/CampaignHistoryRepository';
+import type { CampaignHistoryRepository } from '@domain/repositories';
 
 export class InMemoryCampaignHistoryRepositoryAdapter implements CampaignHistoryRepository {
   private readonly history: Map<string, SentCampaign> = new Map();

@@ -3,7 +3,7 @@ import Redis from 'ioredis';
 import { DiContainer } from '@infrastructure/di/DiContainer';
 import { DI_TYPES, INFRA_TYPES, PRESENTATION_TYPES } from '@infrastructure/di/Types';
 
-import type { EmailPort } from '@domain/ports/EmailPort';
+import type { EmailPort } from '@domain/ports';
 import { EmailWorker } from '@infrastructure/workers/EmailWorker';
 
 // Adapters
@@ -17,16 +17,17 @@ import { BullMqMonitorAdapter } from '@infrastructure/adapters/BullMqMonitorAdap
 // import { InMemoryCampaignHistoryRepositoryAdapter } from '@infrastructure/adapters/repositories/InMemoryCampaignHistoryRepositoryAdapter';
 import { FileSystemCampaignHistoryRepositoryAdapter } from '@infrastructure/adapters/repositories/FileSystemCampaignHistoryRepositoryAdapter';
 
-// Use Cases
-import { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
+// Presentation & Use Cases
+import {
+  MergeMailingListsUseCase,
+  SendCampaignUseCase,
+  GetCampaignsUseCase,
+  GetCampaignDetailsUseCase,
+  GetCampaignStatusUseCase,
+  UpdateDeliveryStatusUseCase
+} from '@application/usecases';
 
-// Presentation
 import { CliOutputService } from '@presentation/cli/services/CliOutputService';
-import { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
-import { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
-import { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
-import { GetCampaignStatusUseCase } from '@application/usecases/GetCampaignStatusUseCase';
-import { UpdateDeliveryStatusUseCase } from '@application/usecases/UpdateDeliveryStatusUseCase';
 
 interface InfraDependencies {
   [INFRA_TYPES.RedisClient]: Redis;

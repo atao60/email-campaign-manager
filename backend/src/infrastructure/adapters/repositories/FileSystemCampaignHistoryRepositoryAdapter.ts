@@ -3,7 +3,7 @@ import { cwd } from 'node:process';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import AsyncLock from 'async-lock';
 
-import type { CampaignHistoryRepository } from '@domain/repositories/CampaignHistoryRepository';
+import type { CampaignHistoryRepository } from '@domain/repositories';
 import type { SentCampaign } from '@domain/models/Campaign';
 
 const DEFAULT_HISTORY_DIR = join(cwd(), 'data', 'history');

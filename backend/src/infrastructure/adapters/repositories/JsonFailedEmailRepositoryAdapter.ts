@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { cwd } from 'node:process';
 
-import { type FailedEmailRepository } from '@domain/repositories/FailedEmailRepository';
+import { type FailedEmailRepository } from '@domain/repositories';
 import { type FailedEmail } from '@domain/models/FailedEmail';
 
 export class JsonFailedEmailRepositoryAdapter implements FailedEmailRepository {

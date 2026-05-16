@@ -1,8 +1,5 @@
 import type { AppDependencies, DependencyToken } from './Types';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { iocContainer } from '@config/tsoa-ioc';
-
 // Type for a function that manufactures a service (Factory).
 // It receives the container itself to resolve its own dependencies recursively.
 type Factory<T> = (container: DiContainer) => T;
@@ -13,7 +10,8 @@ type Factory<T> = (container: DiContainer) => T;
  * Handles lazy instantiation (Lazy Loading) of services.
  *
  * Note. This container only holds the Use Cases (e.g., DI_TYPES.GetCampaignStatusUseCase),
- * but it does not have the controllers registered inside it. @see {@link iocContainer}
+ * but it does not have the controllers registered inside it.
+ * @see `iocContainer` in `@config/tsoa-ioc.ts`.
  */
 export class DiContainer {
   private static instance: DiContainer;

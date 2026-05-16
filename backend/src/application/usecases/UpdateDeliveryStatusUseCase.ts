@@ -1,4 +1,4 @@
-import type { CampaignHistoryRepository } from '../../domain/repositories/CampaignHistoryRepository';
+import type { CampaignHistoryRepository } from '@domain/repositories';
 
 export class UpdateDeliveryStatusUseCase {
   constructor(private readonly historyRepo: CampaignHistoryRepository) {}

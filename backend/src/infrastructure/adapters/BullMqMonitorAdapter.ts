@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq';
 import type Redis from 'ioredis';
 
-import { type QueueMonitorPort } from '@domain/ports/QueueMonitorPort';
+import { type QueueMonitorPort } from '@domain/ports';
 import { type QueueMetrics } from '@domain/models/QueueMetrics';
 
 /**

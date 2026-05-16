@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import csvParser from 'csv-parser';
 import { createObjectCsvWriter } from 'csv-writer';
-import { type CsvPort } from '@domain/ports/CsvPort';
+
+import { type CsvPort } from '@domain/ports';
 import { Contact } from '@domain/models/Contact';
 import { type ContactId } from '@domain/models/BrandedTypes';
 

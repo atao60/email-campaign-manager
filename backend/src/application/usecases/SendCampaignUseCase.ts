@@ -1,7 +1,5 @@
-import { type EmailPort } from '@domain/ports/EmailPort';
-import { type CsvPort } from '@domain/ports/CsvPort';
-import { type LoggerPort } from '@domain/ports/LoggerPort';
-import type { CampaignHistoryRepository } from '@domain/repositories/CampaignHistoryRepository';
+import type { CsvPort, EmailPort, LoggerPort } from '@domain/ports';
+import type { CampaignHistoryRepository } from '@domain/repositories';
 import type { SentCampaign } from '@domain/models/Campaign';
 
 export class SendCampaignUseCase {
