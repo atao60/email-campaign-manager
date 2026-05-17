@@ -145,7 +145,7 @@ vite.config.ts.timestamp-*
 # atao60/email-campaign-manager files
 .archives/
 generated/
-tmp/
+
 **/data/history/
 DEPENDENCIES-LICENSES*
 licenses

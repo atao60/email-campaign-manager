@@ -1,6 +1,0 @@
-id,firstName,lastName,email,jobTitle,company
-c-101,Alice,Dupont,alice.dupont@example.com,Software Engineer,TechCorp
-c-102,Bob,Martin,bob.martin@example.com,Product Manager,Innovate LLC
-c-103,Charlie,Durand,charlie.d@example.com,,
-c-201,David,Lefebvre,david.l@example.com,CTO,Startup Inc
-c-203,Eva,Roux,eva.roux@example.com,,Creative Studio
