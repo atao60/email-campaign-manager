@@ -13,13 +13,32 @@ It's a POC on how to mix two different architectural philosophies, Hexagonal Arc
 
 ## 🏁 Quickstart
 
-From a first console:
+The first time, install the application. From a console:
 
 ```bash
-npm run start:dev
+
+git clone https://github.com/atao60/email-campaign-manager.git
+
+cd email-campaign-manager
+
+### If `mise` is installed:
+mise trust
+
+npm i
+
 ```
 
-Let's start with the CLI interface.
+Now, start the application:
+
+```bash
+npm run start:web
+```
+
+Then with a browser go to [http://localhost:5173](http://localhost:5173).
+
+### The CLI
+
+Let's use now the CLI interface.
 
 From a second console, go to the project root, then:
 
@@ -58,16 +77,6 @@ curl -w "\n" -X POST http://localhost:3000/campaigns/send-campaign \
 curl -w "\n" http://localhost:3000/api/status
 
 ```
-
-Or to use the WEB client:
-
-```bash
-
-run start:dev -w @campaign-manager/client
-
-```
-
-Then with a browser go to [application client](http://localhost:5173).
 
 ## 🛠️ Development
 

@@ -21,12 +21,11 @@ By contributing to `@atao60/personal-mailing-manager`, you agree that your contr
 
 ## Roadmap
 
-- adapter for gmail
-- mode staging: run locally by send to external smtp
 - i18n for messages between backend and client
 - logger with pino
 - form to update contacts files
 - List of exclusions (expired, refused, ...)
+- replace textarea by a full HTML Editor to create template
 
 ## Code Overview
 
