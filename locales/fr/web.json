@@ -3,8 +3,8 @@
     "description": "Ce système gère les fusions de listes de diffusion et suit les campagnes e-mail asynchrones. Il aide à assurer une bonne délivrabilité et fournit un suivi détaillé des livraisons réussies et des rebonds permanents."
   },
   "app": {
-    "aboutTitle": "À propos de ce gestionnaire de mailings",
-    "name": "Gestionnaire de mailings",
+    "aboutTitle": "À propos de ce gestionnaire de campagnes de courriels",
+    "name": "Gestionnaire de campagnes de courriels",
     "version": "Version"
   },
   "dashboard": {
@@ -36,7 +36,7 @@
   },
   "launcher": {
     "contactsCsv": "Contacts (fichier CSV)",
-    "emailSubject": "Objet de l’e-mail",
+    "emailSubject": "Objet du courriel",
     "failedLaunch": "Échec du lancement de la campagne.",
     "fillAllFieldsError": "Veuillez remplir tous les champs.",
     "htmlPlaceholder": "<h1>Bonjour {{firstName}}</h1>...",
