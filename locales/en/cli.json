@@ -6,7 +6,8 @@
       "description": "Merge multiple CSV mailing lists and remove duplicates",
       "error": "Error: Could not merge lists. Please check your file paths.",
       "success_one": "Successfully merged {{count}} list into {{output}}",
-      "success_other": "Successfully merged {{count}} lists into {{output}}"
+      "success_other": "Successfully merged {{count}} lists into {{output}}",
+      "optionExclude": "List of CSV files containing emails to exclude"
     },
     "sendCampaign": {
       "error": "Error: Could not queue the campaign. Please check the logs.",

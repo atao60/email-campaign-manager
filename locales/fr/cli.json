@@ -6,7 +6,8 @@
       "description": "Fusionne plusieurs listes de diffusion CSV et supprime les doublons",
       "error": "Erreur\u00A0: impossible de fusionner les listes. Veuillez vérifier les chemins de vos fichiers.",
       "success_one": "Fusion réussie de {{count}} liste dans {{output}}",
-      "success_other": "Fusion réussie de {{count}} listes dans {{output}}"
+      "success_other": "Fusion réussie de {{count}} listes dans {{output}}",
+      "optionExclude": "List of CSV files containing emails to exclude"
     },
     "sendCampaign": {
       "error": "Erreur\u00A0: Impossible de mettre la campagne en file d’attente. Veuillez consulter les journaux.",
