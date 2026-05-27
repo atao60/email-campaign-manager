@@ -1,18 +1,11 @@
 import express, { json, urlencoded } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import { env } from 'node:process';
 
 import { type DiContainer } from '@infrastructure/di/DiContainer';
-
 import { setContainer } from '@config/tsoa-ioc';
 import { RegisterRoutes } from './generated/routes';
 
-// Load variables from .env file
-dotenv.config();
-
-// Use passed PORT or as default 8080
-const port = env.PORT ?? 8080;
+import { envConfig } from '@config/env';
 
 export function startRestServer(container: DiContainer): void {
   const app = express();
@@ -38,7 +31,7 @@ export function startRestServer(container: DiContainer): void {
   // Let tsoa handle all the routing logic
   RegisterRoutes(app);
 
-  app.listen(port, () => {
-    console.log(`REST API running on http://localhost:${port}`);
+  app.listen(envConfig.port, () => {
+    console.log(`REST API running on http://localhost:${envConfig.port}`);
   });
 }

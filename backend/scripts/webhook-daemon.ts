@@ -4,8 +4,10 @@ import { cwd } from 'node:process';
 
 // --- CONFIGURATION ---
 // Adjust these to match your exact setup
+// FUTURE: to be a config. param.
+const API_DEFAULT_PORT = '3000';
+const WEBHOOK_URL = `http://localhost:${API_DEFAULT_PORT}/campaigns/webhooks/email-status`;
 const HISTORY_DIR = join(cwd(), 'data', 'history');
-const WEBHOOK_URL = 'http://localhost:3000/campaigns/webhooks/email-status';
 
 // Simulation Parameters
 const MIN_DELIVERY_DELAY = 1000; // in msec

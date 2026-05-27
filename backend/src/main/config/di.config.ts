@@ -2,6 +2,7 @@ import Redis from 'ioredis';
 
 import { DiContainer } from '@infrastructure/di/DiContainer';
 import { DI_TYPES, INFRA_TYPES, PRESENTATION_TYPES } from '@infrastructure/di/Types';
+import { envConfig } from './env';
 
 import type { EmailPort } from '@domain/ports';
 import { EmailWorker } from '@infrastructure/workers/EmailWorker';
@@ -9,12 +10,12 @@ import { EmailWorker } from '@infrastructure/workers/EmailWorker';
 // Adapters
 import { ConsoleLogger } from '@infrastructure/services/ConsoleLogger'; // Assuming a basic logger
 import { I18nextLanguageAdapter } from '@infrastructure/adapters/I18nextLanguageAdapter';
-import { NodemailerAdapter } from '@infrastructure/adapters/NodemailerAdapter';
+import { NodemailerAdapter } from '@infrastructure/adapters/email/NodemailerAdapter';
+import { GmailSmtpAdapter } from '@infrastructure/adapters/email/GmailSmtpAdapter';
 import { CsvAdapter } from '@infrastructure/adapters/CsvAdapter';
 import { RedisEmailQueueAdapter } from '@infrastructure/adapters/RedisEmailQueueAdapter';
 import { JsonFailedEmailRepositoryAdapter } from '@infrastructure/adapters/repositories/JsonFailedEmailRepositoryAdapter';
 import { BullMqMonitorAdapter } from '@infrastructure/adapters/BullMqMonitorAdapter';
-// import { InMemoryCampaignHistoryRepositoryAdapter } from '@infrastructure/adapters/repositories/InMemoryCampaignHistoryRepositoryAdapter';
 import { FileSystemCampaignHistoryRepositoryAdapter } from '@infrastructure/adapters/repositories/FileSystemCampaignHistoryRepositoryAdapter';
 
 // Presentation & Use Cases
@@ -58,8 +59,31 @@ export function configureDependencyInjection(): void {
     () => new FileSystemCampaignHistoryRepositoryAdapter()
   );
 
-  // The physical mailer is no longer the public EmailPort, it's an internal dependency
-  container.registerSingleton(INFRA_TYPES.DirectMailer, (c) => new NodemailerAdapter(c.resolve(DI_TYPES.Logger)));
+  // 📨 STAGE CONFIGURATION: Direct Mailer (Physical Sender)
+  if (envConfig.env === 'production' || envConfig.env === 'staging') {
+    container
+      .resolve<ConsoleLogger>(DI_TYPES.Logger)
+      .info(`🚀 [DI] Registering GmailSmtpAdapter for ${envConfig.env}...`);
+
+    if (!envConfig.gmail.user || !envConfig.gmail.appPassword) {
+      throw new Error(`Missing critical Gmail configuration in ${envConfig.env} environment!`);
+    }
+
+    container.registerSingleton(
+      INFRA_TYPES.DirectMailer,
+      (c) =>
+        new GmailSmtpAdapter(c.resolve(DI_TYPES.Logger), {
+          ...envConfig.gmail,
+          logPrefix: `[${envConfig.env.toUpperCase()}]`
+        })
+    );
+  } else {
+    container
+      .resolve<ConsoleLogger>(DI_TYPES.Logger)
+      .info('🛠️ [DI] Registering local NodemailerAdapter for development...');
+
+    container.registerSingleton(INFRA_TYPES.DirectMailer, (c) => new NodemailerAdapter(c.resolve(DI_TYPES.Logger)));
+  }
 
   // The application's EmailPort is now strictly the Redis Queue
   container.registerSingleton(

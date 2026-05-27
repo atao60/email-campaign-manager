@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "Actualisation",
+    "analyse",
     "asynchrones",
     "atao",
     "attente",
@@ -24,12 +25,16 @@
     "enregistré",
     "Envoyés",
     "erreur",
+    "eslintcache",
     "fichier",
     "fournit",
     "gère",
     "gestionnaire",
     "Historique",
+    "hori",
     "inconnue",
+    "jscoverage",
+    "jspm",
     "lancement",
     "liste",
     "listes",
@@ -37,6 +42,9 @@
     "maildev",
     "métriques",
     "modèle",
+    "nuxt",
+    "Nuxt",
+    "pids",
     "plateforme",
     "plusieurs",
     "produite",
@@ -47,6 +55,7 @@
     "réussies",
     "sélectionner",
     "Statut",
+    "stylelintcache",
     "Succès",
     "suivi",
     "survivejs",
@@ -62,7 +71,8 @@
     "Vite",
     "vitepress",
     "voir",
-    "vuepress"
+    "vuepress",
+    "wscript"
   ],
   "typescript.tsdk": "node_modules/typescript/lib"
 }

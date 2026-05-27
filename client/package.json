@@ -5,7 +5,10 @@
   "description": "The Lit-based SPA frontend for the Email Campaign Manager",
   "type": "module",
   "scripts": {
-    "start:dev": "vite",
+    "start": "npm run wait:dev:app",
+    "start:dev:app": "vite",
+    "wait:dev:app": "wait-on tcp:3000 && npm run start:dev:app",
+    "start:dev": "npm run wait:dev:app",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "prepare": "husky",
@@ -35,6 +38,7 @@
     "vite-bundle-visualizer": "^1.2.1",
     "vite-plugin-lit-css": "^2.2.2",
     "vite-plugin-static-copy": "^4.1.0",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.5",
+    "wait-on": "^9.0.10"
   }
 }

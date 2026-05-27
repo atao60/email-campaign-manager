@@ -4,7 +4,7 @@ import type { EmailPort, EmailMessageDto, LoggerPort } from '@domain/ports';
 
 /**
  * ==========================================
- * Synchronous SMTP Client Adapter
+ * Local Development SMTP Adapter (Nodemailer)
  * ==========================================
  *
  * @rule
@@ -12,12 +12,9 @@ import type { EmailPort, EmailMessageDto, LoggerPort } from '@domain/ports';
  * using the `nodemailer` library to send emails via SMTP.
  *
  * @why
- * Following Hexagonal (Ports and Adapters) Architecture, the core domain must remain
- * strictly isolated from third-party libraries and network protocols. By encapsulating
- * Nodemailer inside this adapter, we protect the business logic (Use Cases) from being tightly
- * coupled to SMTP. If the application later migrates to an API-based email provider
- * (e.g., SendGrid, AWS SES), a new adapter can simply be swapped in without altering a
- * single line of core domain code.
+ * This adapter is specifically designed to route emails to a local testing server
+ * (like Maildev or MailHog) on port 1025. It guarantees that real emails are never
+ * sent to real users during active development.
  *
  * @warning
  * **Nodemailer is an SMTP Client, not an SMTP Server.**
@@ -27,8 +24,11 @@ import type { EmailPort, EmailMessageDto, LoggerPort } from '@domain/ports';
  * credentials (host, port, auth) for a production-grade SMTP relay (e.g., Amazon SES, SendGrid SMTP).
  *
  * @how
- * This class wraps a Nodemailer `Transporter` configured with connection pooling to
- * safely handle bulk email processing without overwhelming the server.
+ * It wraps a Nodemailer `Transporter` configured to ignore TLS and connect locally.
+ * Because it simulates network traffic, it intentionally includes fail-states
+ * for specific test emails (e.g., addresses containing 'fail') to verify how
+ * the domain handles SMTP connection rejections.
+ *
  * When the domain invokes `send()` or `scheduleSend()`, the adapter translates the domain-agnostic
  * `Contact` and `EmailMessageDto` objects into Nodemailer's specific payload format.
  * It manages the actual SMTP transmission, catches network-level errors, and delegates
@@ -55,31 +55,33 @@ export class NodemailerAdapter implements EmailPort {
   }
 
   public async send(contact: Contact, message: EmailMessageDto): Promise<void> {
-    console.log('NodemailerAdapter.send, contact: ', contact.email);
+    const toAddress = contact.firstName ? `"${contact.firstName}" <${contact.email}>` : contact.email;
+    console.log('[TEST] NodemailerAdapter.send, contact: ', toAddress);
 
     // FUTURE. TO BE REMOVED. Dirty fail test until a full test available.
     // Run `npx tsx src/main.ts send-campaign data/fail-test.csv`
     if (contact.email.includes('fail')) {
-      this.logger.warn(`[SIMULATION] Intentionally failing email for ${contact.email}`);
+      this.logger.warn(`[SIMULATION] Intentionally failing email for ${toAddress}`);
       throw new Error('SIMULATED_SMTP_ERROR: Connection refused or host unreachable');
     }
 
     try {
       await this.transporter.sendMail({
         from: '"Campaign Manager" <noreply@example.com>',
-        to: contact.email,
-        subject: message.subject,
+        to: toAddress,
+        subject: `[DEV] ${message.subject}`,
         html: message.bodyHtml,
         attachments: message.attachments
       });
-      this.logger.info(`Email sent to ${contact.email}`);
+      this.logger.info(`✉️ [DEV] Email intercepted by local NodemailerAdapter for: ${toAddress}`);
     } catch (error) {
-      this.logger.error(`Failed to send email to ${contact.email}`, error);
+      this.logger.error(`Failed to send email to ${toAddress}`, error);
       // Here: interact with FailedEmailRepository to log the failure
     }
   }
 
   public async scheduleSend(contact: Contact, message: EmailMessageDto, delayMs: number): Promise<void> {
+    this.logger.info(`⏳ [DEV] Simulating scheduled email to ${contact.email} in ${delayMs}ms`);
     setTimeout(() => {
       this.send(contact, message).catch((err) => this.logger.error('Scheduled send failed', err));
     }, delayMs);

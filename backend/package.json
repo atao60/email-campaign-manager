@@ -15,10 +15,17 @@
     "wait:dev:app": "wait-on tcp:1025 tcp:6379 && tsx scripts/check-redis.ts && npm run start:dev:app",
     "wait:dev:daemon": "wait-on tcp:3000 && npm run dev:daemon",
     "start:dev": "concurrently -c \"cyan,yellow,magenta,blue\" -n \"MAIL,REDIS,NODE,DAEMON\" \"npm:dev:smtp\" \"npm:dev:redis\" \"npm:wait:dev:app\" \"npm:wait:dev:daemon\"",
+    "prestart:dev:staging": "npm run gen:rest:api",
+    "start:dev:staging": "cross-env NODE_ENV=staging tsx src/main.ts",
+    "build:staging:app": "npm run gen:rest:api && npm run build",
+    "start:staging:app": "npm run build:staging:app && cross-env NODE_ENV=staging node dist/main.js",
+    "wait:staging:app": "wait-on tcp:6379 && tsx scripts/check-redis.ts && npm run start:staging:app",
+    "start:staging": "concurrently -c \"yellow,magenta,blue\" -n \"REDIS,NODE,DAEMON\" \"npm:dev:redis\" \"npm:wait:staging:app\" \"npm:wait:dev:daemon\"",
+    "start:prod:app": "npm run build:staging:app && cross-env NODE_ENV=production node dist/main.js",
     "prebuild": "npm run gen:rest:api",
     "build": "tsup",
     "check": "tsc --noEmit",
-    "start": "node dist/main.js",
+    "start": "npm run start:staging",
     "lint": "eslint .",
     "build:debug": "npx tsup --watch --onSuccess \"node --inspect dist/main.js\"",
     "i18n:extract": "i18next-cli extract --config i18next-cli.config.ts",
@@ -56,6 +63,7 @@
     "@types/nodemailer": "^8.0.0",
     "@vitest/coverage-v8": "^4.1.5",
     "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "i18next-cli": "^1.56.12",
     "license-checker-rseidelsohn": "^4.4.2",
     "maildev": "^2.2.1",
@@ -65,10 +73,6 @@
     "vite": "^8.0.10",
     "vitest": "^4.1.5",
     "wait-on": "^9.0.5"
-  },
-  "engines": {
-    "node": ">=24.12.0",
-    "npm": ">=11.6.2"
   },
   "private": true,
   "module": "./dist/main.js",
@@ -80,13 +84,5 @@
       "require": "./dist/main.cjs",
       "default": "./dist/main.js"
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/atao60/personal-mailing-manager.git"
-  },
-  "bugs": {
-    "url": "https://github.com/atao60/personal-mailing-manager/issues"
-  },
-  "homepage": "https://github.com/atao60/personal-mailing-manager#readme"
+  }
 }

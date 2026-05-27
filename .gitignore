@@ -147,6 +147,7 @@ vite.config.ts.timestamp-*
 generated/
 tmp/
 **/data/history/
+**/data/private/
 DEPENDENCIES-LICENSES*
 licenses
 third-party-notices.*

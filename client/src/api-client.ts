@@ -13,9 +13,9 @@ export interface CampaignStatus {
 }
 
 // FUTURE: to be a config. param.
-const DEFAULT_PORT = '3000';
+const API_DEFAULT_PORT = '3000';
 
-const API_BASE_URL = `http://localhost:${DEFAULT_PORT}`;
+const API_BASE_URL = `http://localhost:${API_DEFAULT_PORT}`;
 
 export const apiClient = {
   async getStatus(): Promise<CampaignStatus> {
