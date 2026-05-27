@@ -1,4 +1,4 @@
-import process from 'node:process';
+import { argv, exit } from 'node:process';
 import { Command } from 'commander';
 
 import { type DiContainer } from '@infrastructure/di/DiContainer';
@@ -20,16 +20,19 @@ export async function startCli(container: DiContainer): Promise<void> {
     .description(t('cli:commands.merge.description'))
     .argument('<output>', t('cli:commands.merge.argOutput'))
     .argument('<inputs...>', t('cli:commands.merge.argInputs'))
+    .option('-e, --exclude <files...>', t('cli:commands.merge.optionExclude', { defaultValue: 'Files to exclude' }), [])
     .option('-v, --verbose', 'Output internal telemetry')
     .action(async (output, inputs, options) => {
       const useCase = container.resolve(DI_TYPES.MergeMailingListsUseCase);
 
       try {
+        const exclusions = options.exclude;
+
         if (options.verbose) {
-          logger.info('Starting merge operation', { inputs, output });
+          logger.info('Starting merge operation', { inputs, exclusions, output });
         }
 
-        await useCase.execute(inputs, output);
+        await useCase.execute(inputs, exclusions, output);
 
         // UI Output: Clean, semantic, and localized output for direct communication to the user
         outputService.success('cli:commands.merge.success', { count: inputs.length, output });
@@ -39,7 +42,7 @@ export async function startCli(container: DiContainer): Promise<void> {
 
         // Semantic, localized error UI Output: A friendly, clean error message for the user
         outputService.error('cli:commands.merge.error');
-        process.exit(1);
+        exit(1);
       }
     });
 
@@ -59,11 +62,11 @@ export async function startCli(container: DiContainer): Promise<void> {
         outputService.success('cli:commands.sendCampaign.success', { count: count.toString(), file: csvFile });
 
         // Brief timeout to ensure BullMQ flushes the jobs to Redis before Node exits
-        setTimeout(() => process.exit(0), 1000);
+        setTimeout(() => exit(0), 1000);
       } catch (error) {
         logger.error('Failed to queue campaign', error);
         outputService.error('cli:commands.sendCampaign.error');
-        process.exit(1);
+        exit(1);
       }
     });
 
@@ -84,13 +87,13 @@ export async function startCli(container: DiContainer): Promise<void> {
         outputService.raw(t('cli:commands.status.separator'));
         outputService.raw(t('cli:commands.status.hardFailures', { total: status.hardFailures.toString() }));
 
-        process.exit(0);
+        exit(0);
       } catch (error) {
         logger.error('Failed to retrieve status', error);
         outputService.error('cli:commands.status.error');
-        process.exit(1);
+        exit(1);
       }
     });
 
-  await program.parseAsync(process.argv);
+  await program.parseAsync(argv);
 }
