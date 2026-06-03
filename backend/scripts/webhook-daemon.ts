@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { join } from 'node:path';
-import { cwd } from 'node:process';
+import { cwd, env } from 'node:process';
 
 // --- CONFIGURATION ---
 // Adjust these to match your exact setup
@@ -12,7 +12,10 @@ const HISTORY_DIR = join(cwd(), 'data', 'history');
 // Simulation Parameters
 const MIN_DELIVERY_DELAY = 1000; // in msec
 const MAX_DELIVERY_DELAY = 4000; // in msec
-const EMAIL_BOUNCE_RATE = 0.05; // 5% chance of a bounced email
+const FAKE_EMAIL_BOUNCE_RATE = 0.05; // 5% chance of a bounced email
+const NO_EMAIL_BOUNCE_RATE = 0.0; // no bounced email
+// No fake failled email in production mode AND in staging mode
+const EMAIL_BOUNCE_RATE = env.NODE_ENV?.startsWith('dev') ? FAKE_EMAIL_BOUNCE_RATE : NO_EMAIL_BOUNCE_RATE;
 const DAEMON_POLL_INTERVAL = 3000; // in ms, how often the daemon checks for files
 
 // Keep track of webhooks we've already fired in memory so we don't spam the server

@@ -1,1 +1,11 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "💅 Formatting code..."
+npx prettier --write .
+
+echo "🚦 Checking TypeScript types..."
+npx tsc --noEmit
+
+echo "🧪 Running unit tests..."
 npm test

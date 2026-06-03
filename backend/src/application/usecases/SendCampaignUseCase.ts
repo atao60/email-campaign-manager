@@ -1,4 +1,4 @@
-import type { CsvPort, EmailPort, LoggerPort } from '@domain/ports';
+import type { CsvPort, EmailPort, LoggerPort, EmailAttachmentDto, EmailMessageDto } from '@domain/ports';
 import type { CampaignHistoryRepository } from '@domain/repositories';
 import type { SentCampaign } from '@domain/models/Campaign';
 
@@ -13,7 +13,7 @@ export class SendCampaignUseCase {
   public async execute(
     contactsFilePath: string,
     subject: string,
-    template: { html?: string; url?: string }
+    template: { html?: string; url?: string; attachments?: EmailAttachmentDto[] }
   ): Promise<number> {
     // Resolve the HTML Content
     let templateHtml: string;
@@ -50,18 +50,24 @@ export class SendCampaignUseCase {
     this.logger.info(`Queuing campaign for ${contacts.length} contacts...`);
 
     for (const contact of contacts) {
-      const personalizedHtml = templateHtml.replace('{{firstName}}', contact.firstName);
+      const personalizedHtml = templateHtml
+        .replace(/{{firstName}}/g, contact.firstName)
+        .replace(/{{lastName}}/g, contact.lastName)
+        .replace(/{{email}}/g, contact.email);
 
-      await this.emailPort.send(contact, {
+      const messagePayload: EmailMessageDto = {
         subject: subject,
-        bodyHtml: personalizedHtml
-      });
+        bodyHtml: personalizedHtml,
+        ...(template.attachments && { attachments: template.attachments })
+      };
+      await this.emailPort.send(contact, messagePayload);
     }
 
     this.logger.info('All emails successfully queued to Redis.');
 
     const pendingEmails = contacts.map((contact) => ({
       address: contact.email,
+      name: contact.firstName + ' ' + contact.lastName,
       status: 'PENDING' as const
     }));
 

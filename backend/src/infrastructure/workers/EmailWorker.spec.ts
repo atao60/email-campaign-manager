@@ -60,7 +60,9 @@ describe('EmailWorker', () => {
       },
       message: {
         subject: 'Hello',
-        bodyHtml: '<p>Hi Alice</p>'
+        bodyHtml: '<p>Hi Alice</p>',
+        // Added attachments to verify they are seamlessly passed through the worker
+        attachments: [{ filename: 'logo.png', path: '/tmp/logo.png', cid: 'logo.png' }]
       }
     }
   } as unknown as Job;
@@ -130,6 +132,7 @@ describe('EmailWorker', () => {
       // Verify the message payload was passed
       const passedMessage = vi.mocked(mockEmailPort.send).mock.calls[0]?.[1];
       expect(passedMessage).toEqual(mockJob.data.message);
+      expect(passedMessage!.attachments).toHaveLength(1);
 
       // Verify logging
       expect(mockLogger.info).toHaveBeenCalledWith('Processing email job job-123 for alice@test.com');

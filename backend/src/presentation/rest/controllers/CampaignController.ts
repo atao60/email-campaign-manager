@@ -9,13 +9,16 @@ import {
   Get,
   Path,
   UploadedFile,
-  FormField
+  UploadedFiles,
+  FormField,
+  Response as TsoaResponseDoc
 } from 'tsoa';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 
 import type { CampaignSummary, CampaignDetail, LaunchCampaignResponse } from '../dto/CampaignDTO';
+import type { EmailAttachmentDto } from '@domain/ports';
 import type {
   MergeMailingListsUseCase,
   GetCampaignDetailsUseCase,
@@ -27,6 +30,7 @@ import type {
 interface MergePayload {
   inputs: string[];
   output: string;
+  exclusions?: string[];
 }
 
 interface BaseSendCampaignPayload {
@@ -74,7 +78,8 @@ export class CampaignController extends Controller {
     @Res() serverError: TsoaResponse<500, { error: string }>
   ): Promise<{ message: string }> {
     try {
-      await this.mergeUseCase.execute(requestBody.inputs, requestBody.output);
+      const exclusions = requestBody.exclusions || [];
+      await this.mergeUseCase.execute(requestBody.inputs, exclusions, requestBody.output);
       return { message: `Successfully merged lists into ${requestBody.output}` };
     } catch (error) {
       console.error('Internal Server Error during merge: ', error);
@@ -83,22 +88,21 @@ export class CampaignController extends Controller {
   }
 
   @Post('send')
+  @SuccessResponse('202', 'Accepted')
+  @TsoaResponseDoc<{ error: string }>('500', 'Internal Server Error')
   public async launchCampaign(
-    // ==========================================
-    // 1. RESPONDERS (Outputs - Required)
-    // ==========================================
-    @Res() serverError: TsoaResponse<500, { error: string }>,
+    // RESPONDERS (Outputs - Required)
     @Res() validationError: TsoaResponse<400, { error: string }>,
-    @Res() acceptedResponse: TsoaResponse<202, LaunchCampaignResponse>,
+    // @Res() acceptedResponse: TsoaResponse<202, LaunchCampaignResponse>,
 
-    // ==========================================
-    // 2. FORM DATA (Inputs - Required first, Optional last)
-    // ==========================================
-    @UploadedFile() contactsCsv: Express.Multer.File,
+    // FORM DATA (Inputs - Required first, Optional last)
+    @UploadedFile('csvFile') contactsCsv: Express.Multer.File, // ---> csvFile
     @FormField() subject: string,
-    @FormField() templateHtml?: string,
-    @FormField() templateUrl?: string
-  ) {
+    @FormField('html') templateHtml?: string,
+    @FormField('url') templateUrl?: string,
+    @UploadedFiles() attachments?: Express.Multer.File[],
+    @UploadedFiles() exclusions?: Express.Multer.File[]
+  ): Promise<LaunchCampaignResponse> {
     try {
       console.log('CampaignController.launchCampaign starting');
       // 🛑 TEST:
@@ -112,32 +116,79 @@ export class CampaignController extends Controller {
       } else if (templateUrl) {
         return validationError(400, { error: 'URL fetching is not yet implemented.' });
       } else {
-        return validationError(400, { error: 'Must provide either templateHtml or templateUrl' });
+        return validationError(400, { error: 'Must provide either HTML template or template URL' });
       }
 
-      // 2. Handle the uploaded file
+      // Handle the uploaded file
       // Because your use case expects a file path, we must temporarily write the uploaded buffer to disk.
       // (Make sure to import * as fs from 'fs' and * as path from 'path' at the top of your file)
       const tmpDir = join(cwd(), 'tmp');
       if (!existsSync(tmpDir)) {
         mkdirSync(tmpDir, { recursive: true });
       }
-      const tempFilePath = join(tmpDir, `upload-${Date.now()}.csv`);
-      writeFileSync(tempFilePath, contactsCsv.buffer);
+
+      // Save Master CSV to disk
+      const tempCvsFilePath = join(tmpDir, `upload-${Date.now()}.csv`);
+      writeFileSync(tempCvsFilePath, contactsCsv.buffer);
+
+      // Process Exclusions (If any)
+      let finalTargetCsvPath = tempCvsFilePath;
+      console.log('CampaignController.launchCampaign, initial finalTargetCsvPath: ', finalTargetCsvPath);
+
+      if (exclusions && exclusions.length > 0) {
+        const exclusionPaths: string[] = [];
+
+        // Write all exclusion files to disk temporarily
+        for (let i = 0; i < exclusions.length; i++) {
+          const exPath = join(tmpDir, `excl-${Date.now()}-${i}.csv`);
+          writeFileSync(exPath, exclusions[i]!.buffer);
+          exclusionPaths.push(exPath);
+        }
+
+        // Run the deduplication/exclusion use case
+        finalTargetCsvPath = join(tmpDir, `filtered-master-${Date.now()}.csv`);
+        await this.mergeUseCase.execute([tempCvsFilePath], exclusionPaths, finalTargetCsvPath);
+      }
+      console.log('CampaignController.launchCampaign, final finalTargetCsvPath: ', finalTargetCsvPath);
+      // Process and save Attachments to disk
+      const processedAttachments: EmailAttachmentDto[] = [];
+
+      if (attachments && attachments.length > 0) {
+        for (const att of attachments) {
+          // Use originalname but prepend timestamp to prevent overwriting files with the same name
+          const attPath = join(tmpDir, `att-${Date.now()}-${att.originalname}`);
+          writeFileSync(attPath, att.buffer);
+
+          processedAttachments.push({
+            filename: att.originalname,
+            path: attPath,
+            // Assign the original filename as the Content-ID
+            // This allows the user to simply write: <img src="cid:logo.png" />
+            cid: att.originalname
+          });
+        }
+      }
 
       // 3. Execute the business logic using the temporary file path
-      const processedCount = await this.sendCampaignUseCase.execute(tempFilePath, subject, { html: finalHtmlContent });
+      const templatePayload = {
+        html: finalHtmlContent,
+        ...(processedAttachments.length > 0 && { attachments: processedAttachments })
+      };
+      const processedCount = await this.sendCampaignUseCase.execute(finalTargetCsvPath, subject, templatePayload);
 
-      // (Optional but recommended) Clean up the temp file after the queue accepts it
+      // TBD? Clean up the temp file after the queue accepts it
       // fs.unlinkSync(tempFilePath);
 
-      return acceptedResponse(202, {
+      this.setStatus(202);
+
+      // Return the payload directly!
+      return {
         message: `Campaign for ${subject} has been queued for sending.`,
         processed: processedCount
-      });
+      };
     } catch (error: unknown) {
       console.error(`Launch campaign error:`, error);
-      return serverError(500, { error: 'Internal Server Error while queueing campaign.' });
+      throw new Error('Internal Server Error while queueing campaign.', { cause: error });
     }
   }
 
@@ -166,6 +217,7 @@ export class CampaignController extends Controller {
   ): Promise<CampaignDetail> {
     try {
       const campaignDetail = await this.getCampaignDetailsUseCase.execute(campaignId);
+      console.log('CampaignController.getCampaignDetails, campaignDetail: ', campaignDetail);
 
       if (!campaignDetail) {
         return notFoundError(404, { error: `Campaign with ID ${campaignId} not found.` });

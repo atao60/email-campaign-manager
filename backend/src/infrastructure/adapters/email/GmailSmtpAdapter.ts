@@ -14,6 +14,7 @@ export interface GmailConfig {
   /** Gmail requires an "App Password", not your main account password */
   appPassword: string;
   defaultFrom: string;
+  replyTo: string;
   logPrefix: string;
 }
 
@@ -42,6 +43,7 @@ export interface GmailConfig {
 export class GmailSmtpAdapter implements EmailPort {
   private readonly transporter: nodemailer.Transporter;
   private readonly defaultFrom: string;
+  private readonly replyTo: string;
   private readonly logPrefix: string;
 
   constructor(
@@ -49,7 +51,7 @@ export class GmailSmtpAdapter implements EmailPort {
     config: GmailConfig
   ) {
     this.defaultFrom = config.defaultFrom;
-
+    this.replyTo = config.replyTo;
     this.logPrefix = config.logPrefix;
 
     this.transporter = nodemailer.createTransport({
@@ -64,24 +66,26 @@ export class GmailSmtpAdapter implements EmailPort {
   }
 
   async send(contact: Contact, message: EmailMessageDto): Promise<void> {
-    // 1. Map the Domain Entity to Infrastructure Primitives
+    // Map the Domain Entity to Infrastructure Primitives
     // Assuming Contact has 'email' and optionally 'firstName'/'lastName' or 'name'
     const recipientName = contact.firstName ? `${contact.firstName} ${contact.lastName || ''}`.trim() : '';
     const toAddress = recipientName ? `"${recipientName}" <${contact.email}>` : contact.email;
 
-    // 2. Map the DTO to Nodemailer Options
+    // Map the DTO to Nodemailer Options
     const mailOptions: nodemailer.SendMailOptions = {
       from: this.defaultFrom,
       to: toAddress,
       subject: message.subject,
       html: message.bodyHtml,
+      replyTo: this.replyTo,
       attachments: message.attachments?.map((att) => ({
         filename: att.filename,
-        path: att.path
+        path: att.path,
+        cid: att.cid
       }))
     };
 
-    // 3. Dispatch
+    // Dispatch
     try {
       await this.transporter.sendMail(mailOptions);
       this.logger.info(`✉️ ${this.logPrefix} Email successfully sent to: ${toAddress}`);

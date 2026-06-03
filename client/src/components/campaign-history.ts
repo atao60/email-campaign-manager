@@ -181,7 +181,9 @@ export class CampaignHistory extends LitElement {
         ${c.emails.map(
           (email: EmailDeliveryStatus) => html`
             <li>
-              <span>${email.address}</span>
+              <span>
+                ${email.name ? html`<strong>${email.name}</strong> &lt;${email.address}&gt;` : email.address}
+              </span>
               <span class="status-badge ${this.getBadgeClass(email.status)}">
                 ${email.status} ${email.errorReason ? `(${email.errorReason})` : ''}
               </span>

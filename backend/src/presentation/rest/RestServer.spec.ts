@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import express, { json, urlencoded } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
 import { startRestServer } from './RestServer';
 import { setContainer } from '@config/tsoa-ioc';
@@ -30,16 +29,19 @@ vi.mock('cors', () => ({
   default: vi.fn(() => 'mock-cors-middleware')
 }));
 
-vi.mock('dotenv', () => ({
-  default: { config: vi.fn() }
-}));
-
 vi.mock('@config/tsoa-ioc', () => ({
   setContainer: vi.fn()
 }));
 
 vi.mock('./generated/routes', () => ({
   RegisterRoutes: vi.fn()
+}));
+
+// Mock the environment config module
+vi.mock('@config/env', () => ({
+  envConfig: {
+    port: 3000
+  }
 }));
 
 describe('RestServer', () => {
@@ -53,22 +55,6 @@ describe('RestServer', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-  });
-
-  it('should initialize dotenv on module load', async () => {
-    // 1. Clear any previous mock tracking
-    vi.clearAllMocks();
-
-    // 2. Wipe Vitest's module cache
-    vi.resetModules();
-
-    // 3. Dynamically import the file.
-    // Because the cache is empty, Node is forced to read the file
-    // from scratch, executing the top-level dotenv.config() again!
-    await import('./RestServer');
-
-    // 4. Now the assertion will pass perfectly!
-    expect(dotenv.config).toHaveBeenCalledTimes(1);
   });
 
   it('should wire up Express middleware, DI, and routes correctly', () => {
@@ -94,10 +80,10 @@ describe('RestServer', () => {
     // Assert: Route generation
     expect(RegisterRoutes).toHaveBeenCalledWith(mockApp);
 
-    // Assert: Server started
-    expect(mockApp.listen).toHaveBeenCalled();
-    // Verify the console.log inside the listen callback fired
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('REST API running on http://localhost:'));
+    // Assert: Server started with the port from envConfig
+    expect(mockApp.listen).toHaveBeenCalledWith(3000, expect.any(Function));
+    // Verify the console.log inside the listen callback fired correctly
+    expect(console.log).toHaveBeenCalledWith('REST API running on http://localhost:3000');
   });
 
   describe('Custom Logging Middleware', () => {

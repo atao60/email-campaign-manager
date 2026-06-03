@@ -14,6 +14,8 @@ type ViewState = 'dashboard' | 'launcher' | 'history' | 'about';
 
 const i18n = await initI18n();
 
+const DEFAULT_ENV_MODE = 'production';
+
 @customElement('app-shell')
 export class AppShell extends LitElement {
   @state() private currentView: ViewState = 'dashboard';
@@ -43,9 +45,15 @@ export class AppShell extends LitElement {
 
   render() {
     const t = i18n.t;
+    const envMode = import.meta.env.MODE;
     return html`
       <nav>
-        <div class="brand">${t('app.name')}</div>
+        <div class="brand">
+          ${t('app.name')}
+          ${envMode && envMode !== DEFAULT_ENV_MODE
+            ? html`<span class="env-badge env-${envMode}">${envMode}</span>`
+            : ''}
+        </div>
         <button class="hamburger" @click=${() => (this.isMobileMenuOpen = !this.isMobileMenuOpen)}>☰</button>
         <div class="nav-links ${this.isMobileMenuOpen ? 'open' : ''}">
           <button

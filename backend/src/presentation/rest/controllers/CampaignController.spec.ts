@@ -33,7 +33,6 @@ describe('CampaignController', () => {
   // Mock TSOA Response Injectors
   const serverError = vi.fn((status, payload) => ({ status, payload }));
   const validationError = vi.fn((status, payload) => ({ status, payload }));
-  const acceptedResponse = vi.fn((status, payload) => ({ status, payload }));
   const notFoundError = vi.fn((status, payload) => ({ status, payload }));
 
   beforeEach(() => {
@@ -70,7 +69,7 @@ describe('CampaignController', () => {
       const requestBody = { inputs: ['list1.csv'], output: 'out.csv' };
       const response = await controller.mergeLists(requestBody, serverError);
 
-      expect(mergeUseCase.execute).toHaveBeenCalledWith(['list1.csv'], 'out.csv');
+      expect(mergeUseCase.execute).toHaveBeenCalledWith(['list1.csv'], [], 'out.csv');
       expect(response).toEqual({ message: 'Successfully merged lists into out.csv' });
     });
 
@@ -89,9 +88,7 @@ describe('CampaignController', () => {
 
     it('should fail validation if templateUrl is provided instead of HTML', async () => {
       const response = await controller.launchCampaign(
-        serverError,
         validationError,
-        acceptedResponse,
         mockFile,
         'Subject',
         undefined, // no html
@@ -103,23 +100,19 @@ describe('CampaignController', () => {
     });
 
     it('should fail validation if neither html nor url is provided', async () => {
-      await controller.launchCampaign(serverError, validationError, acceptedResponse, mockFile, 'Subject');
+      await controller.launchCampaign(validationError, mockFile, 'Subject');
 
-      expect(validationError).toHaveBeenCalledWith(400, { error: 'Must provide either templateHtml or templateUrl' });
+      expect(validationError).toHaveBeenCalledWith(400, { error: 'Must provide either HTML template or template URL' });
     });
 
     it('should process campaign, create tmp folder if missing, write file, and return 202', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(false); // Simulate tmp folder missing
       sendCampaignUseCase.execute.mockResolvedValue(100);
 
-      const response = await controller.launchCampaign(
-        serverError,
-        validationError,
-        acceptedResponse,
-        mockFile,
-        'My Subject',
-        '<p>Hello</p>'
-      );
+      // Spy on the inherited TSOA controller method
+      const setStatusSpy = vi.spyOn(controller, 'setStatus').mockImplementation(() => {});
+
+      const response = await controller.launchCampaign(validationError, mockFile, 'My Subject', '<p>Hello</p>');
 
       expect(fs.existsSync).toHaveBeenCalled();
       expect(fs.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('tmp'), { recursive: true });
@@ -131,13 +124,10 @@ describe('CampaignController', () => {
         { html: '<p>Hello</p>' }
       );
 
-      expect(acceptedResponse).toHaveBeenCalledWith(202, {
+      expect(setStatusSpy).toHaveBeenCalledWith(202);
+      expect(response).toEqual({
         message: 'Campaign for My Subject has been queued for sending.',
         processed: 100
-      });
-      expect(response).toEqual({
-        status: 202,
-        payload: { message: 'Campaign for My Subject has been queued for sending.', processed: 100 }
       });
     });
 
@@ -145,34 +135,70 @@ describe('CampaignController', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true); // Simulate tmp folder exists
       sendCampaignUseCase.execute.mockResolvedValue(5);
 
-      await controller.launchCampaign(
-        serverError,
-        validationError,
-        acceptedResponse,
-        mockFile,
-        'Subject',
-        '<p>HTML</p>'
-      );
+      await controller.launchCampaign(validationError, mockFile, 'Subject', '<p>HTML</p>');
 
       expect(fs.existsSync).toHaveBeenCalled();
       expect(fs.mkdirSync).not.toHaveBeenCalled(); // Skipping directory creation
       expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
-    it('should catch errors from the use case and return 500', async () => {
+    it('should process exclusions by calling the mergeUseCase', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      sendCampaignUseCase.execute.mockResolvedValue(10);
+
+      const mockExclusion = { buffer: Buffer.from('excl') } as Express.Multer.File;
+
+      await controller.launchCampaign(validationError, mockFile, 'Subject', '<p>HTML</p>', undefined, undefined, [
+        mockExclusion
+      ]);
+
+      // It should write both the master CSV and the exclusion CSV
+      expect(fs.writeFileSync).toHaveBeenCalledTimes(2);
+
+      // It should execute the merge logic to generate a new final CSV
+      expect(mergeUseCase.execute).toHaveBeenCalledWith(
+        [expect.stringContaining('.csv')], // Master file
+        [expect.stringContaining('excl-')], // Exclusion files
+        expect.stringContaining('filtered-master') // Output file
+      );
+
+      // The send campaign use case should receive the new FILTERED path
+      expect(sendCampaignUseCase.execute).toHaveBeenCalledWith(expect.stringContaining('filtered-master'), 'Subject', {
+        html: '<p>HTML</p>'
+      });
+    });
+
+    it('should process attachments and append them to the template payload', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      sendCampaignUseCase.execute.mockResolvedValue(10);
+
+      const mockAttachment = { originalname: 'logo.png', buffer: Buffer.from('img') } as Express.Multer.File;
+
+      await controller.launchCampaign(validationError, mockFile, 'Subject', '<p>HTML</p>', undefined, [mockAttachment]);
+
+      // It should write both the master CSV and the attachment
+      expect(fs.writeFileSync).toHaveBeenCalledTimes(2);
+
+      // The send campaign use case should receive the payload WITH attachments
+      expect(sendCampaignUseCase.execute).toHaveBeenCalledWith(expect.any(String), 'Subject', {
+        html: '<p>HTML</p>',
+        attachments: [
+          {
+            filename: 'logo.png',
+            path: expect.stringContaining('logo.png'),
+            cid: 'logo.png'
+          }
+        ]
+      });
+    });
+
+    it('should catch errors from the use case and throw a 500 error directly', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       sendCampaignUseCase.execute.mockRejectedValue(new Error('System crash'));
 
-      await controller.launchCampaign(
-        serverError,
-        validationError,
-        acceptedResponse,
-        mockFile,
-        'Subject',
-        '<p>HTML</p>'
+      await expect(controller.launchCampaign(validationError, mockFile, 'Subject', '<p>HTML</p>')).rejects.toThrow(
+        'Internal Server Error while queueing campaign.'
       );
-
-      expect(serverError).toHaveBeenCalledWith(500, { error: 'Internal Server Error while queueing campaign.' });
     });
   });
 

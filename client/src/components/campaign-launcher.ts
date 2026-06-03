@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { customElement, state, query } from 'lit/decorators.js';
 import { t } from 'i18next';
 
-import { apiClient } from '../api-client';
+import { apiClient, type LaunchCampaignRequest } from '../api-client';
 
 import styles from './campaign-launcher.scss' with { type: 'css' };
 
@@ -17,6 +17,8 @@ export class CampaignLauncher extends LitElement {
   @state() private statusMessage: { type: 'success' | 'error'; text: string } | null = null;
 
   @query('#csv-file') private readonly fileInput!: HTMLInputElement;
+  @query('#attachments-file') private readonly attachmentsInput!: HTMLInputElement;
+  @query('#exclusions-file') private readonly exclusionsInput!: HTMLInputElement;
 
   private handleSubjectChange(e: Event) {
     this.subject = (e.target as HTMLInputElement).value;
@@ -43,19 +45,35 @@ export class CampaignLauncher extends LitElement {
 
     this.isSubmitting = true;
 
-    // Build the multipart/form-data payload
-    const formData = new FormData();
-    formData.append('contactsCsv', file);
-    formData.append('subject', this.subject);
+    // Declare the payload variable using the strictly required base fields
+    const payload: LaunchCampaignRequest = {
+      csvFile: file,
+      subject: this.subject
+    };
 
+    // Attach the correct template key
     if (this.templateMode === 'html') {
-      formData.append('templateHtml', this.templateContent);
+      payload.html = this.templateContent;
     } else {
-      formData.append('templateUrl', this.templateContent);
+      payload.url = this.templateContent;
+    }
+
+    // Attach attachments ONLY if they exist
+    const attachments = Array.from(this.attachmentsInput.files || []);
+    if (attachments.length > 0) {
+      payload.attachments = attachments;
+    }
+
+    // Attach exclusion files ONLY if they exist
+    const exclusions = Array.from(this.exclusionsInput.files || []);
+    if (exclusions.length > 0) {
+      payload.exclusions = exclusions;
     }
 
     try {
-      const result = await apiClient.launchCampaign(formData);
+      // Pass the strongly-typed object to your updated apiClient
+      const result = await apiClient.launchCampaign(payload);
+
       this.statusMessage = {
         type: 'success',
         text: t('launcher.successQueued', { count: result.processed })
@@ -65,6 +83,8 @@ export class CampaignLauncher extends LitElement {
       this.subject = '';
       this.templateContent = '';
       this.fileInput.value = '';
+      this.attachmentsInput.value = '';
+      this.exclusionsInput.value = '';
     } catch (error: unknown) {
       if (error instanceof Error) {
         this.statusMessage = { type: 'error', text: error.message || t('launcher.failedLaunch') };
@@ -145,6 +165,18 @@ export class CampaignLauncher extends LitElement {
         <div class="form-group">
           <label for="csv-file">${t('launcher.contactsCsv')}</label>
           <input type="file" id="csv-file" accept=".csv" required />
+        </div>
+
+        <div class="form-group">
+          <label for="exclusions-file">${t('launcher.exclusions')} (${t('launcher.optional')})</label>
+          <input type="file" id="exclusions-file" accept=".csv" multiple />
+          <small class="help-text">${t('launcher.exclusionsHelp')}</small>
+        </div>
+
+        <div class="form-group">
+          <label for="attachments-file">${t('launcher.attachments')} (${t('launcher.optional')})</label>
+          <input type="file" id="attachments-file" multiple />
+          <small class="help-text">${t('launcher.attachmentsHelp')}</small>
         </div>
 
         <button type="submit" ?disabled=${this.isSubmitting}>

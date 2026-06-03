@@ -46,7 +46,12 @@
     "templateSource": "Template Source",
     "title": "Launch New Campaign",
     "unknownError": "An unknown error occurred.",
-    "urlPlaceholder": "https://example.com/template.html"
+    "urlPlaceholder": "https://example.com/template.html",
+    "attachments": "Attachments",
+    "attachmentsHelp": "Select one or multiple files to attach to your email.",
+    "exclusions": "Exclusion Lists",
+    "exclusionsHelp": "Upload CSV files containing contacts to exclude from this campaign.",
+    "optional": "optional"
   },
   "nav": {
     "about": "About",

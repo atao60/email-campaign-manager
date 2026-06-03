@@ -4,12 +4,22 @@ import type {
   LaunchCampaignResponse
 } from '../../backend/src/presentation/rest/dto/CampaignDTO';
 
+// FUTURE to be shared with backend/src/domain/models/CampaignStatus.ts?
 export interface CampaignStatus {
   waiting: number;
   active: number;
   completed: number;
   failed: number;
   hardFailures: number;
+}
+
+export interface LaunchCampaignRequest {
+  csvFile: File;
+  subject: string;
+  html?: string;
+  url?: string;
+  attachments?: File[];
+  exclusions?: File[];
 }
 
 // FUTURE: to be a config. param.
@@ -42,7 +52,40 @@ export const apiClient = {
     return response.json();
   },
 
-  async launchCampaign(formData: FormData): Promise<LaunchCampaignResponse> {
+  // Now accepts the strict interface instead of raw FormData
+  async launchCampaign(payload: LaunchCampaignRequest): Promise<LaunchCampaignResponse> {
+    const formData = new FormData();
+
+    // Append standard fields
+    formData.append('csvFile', payload.csvFile);
+    formData.append('subject', payload.subject);
+
+    // Conditionally append the templates so we don't send "undefined" as a string
+    if (payload.html) {
+      formData.append('html', payload.html);
+    }
+    if (payload.url) {
+      formData.append('url', payload.url);
+    }
+
+    // Append attachments if they exist
+    if (payload.attachments && payload.attachments.length > 0) {
+      payload.attachments.forEach((file) => {
+        // Appending multiple files to the exact same field name ('attachments')
+        // creates an array of files on the backend
+        formData.append('attachments', file);
+      });
+    }
+
+    // Append exclusions if they exist
+    if (payload.exclusions && payload.exclusions.length > 0) {
+      payload.exclusions.forEach((file) => {
+        // Appending multiple files to the exact same field name ('exclusions')
+        // creates an array of files on the backend
+        formData.append('exclusions', file);
+      });
+    }
+
     const response = await fetch(`${API_BASE_URL}/campaigns/send`, {
       method: 'POST',
       body: formData

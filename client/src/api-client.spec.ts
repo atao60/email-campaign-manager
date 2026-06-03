@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-import { apiClient } from './api-client';
+import { apiClient, type LaunchCampaignRequest } from './api-client';
 
 describe('apiClient', () => {
   const originalFetch = globalThis.fetch;
@@ -98,7 +98,9 @@ describe('apiClient', () => {
   });
 
   describe('launchCampaign', () => {
-    it('should successfully launch a campaign with FormData', async () => {
+    const dummyCsv = new File(['name,email\nTest,test@test.com'], 'contacts.csv', { type: 'text/csv' });
+
+    it('should successfully launch a campaign and correctly map standard fields to FormData', async () => {
       const mockResponse = { processed: 25 };
 
       vi.mocked(globalThis.fetch).mockResolvedValue({
@@ -106,16 +108,60 @@ describe('apiClient', () => {
         json: async () => mockResponse
       } as Response);
 
-      const formData = new FormData();
-      formData.append('subject', 'Test Subject');
+      const payload: LaunchCampaignRequest = {
+        subject: 'Test Subject',
+        csvFile: dummyCsv,
+        html: '<p>Hi</p>'
+      };
 
-      const result = await apiClient.launchCampaign(formData);
+      const result = await apiClient.launchCampaign(payload);
 
-      expect(globalThis.fetch).toHaveBeenCalledWith('http://localhost:3000/campaigns/send', {
-        method: 'POST',
-        body: formData
-      });
+      // Verify response
       expect(result).toEqual(mockResponse);
+
+      // Verify the fetch call url
+      const fetchCallArgs = vi.mocked(globalThis.fetch).mock.calls[0];
+      expect(fetchCallArgs[0]).toBe('http://localhost:3000/campaigns/send');
+
+      // Verify the generated FormData object sent in the body
+      const formData = fetchCallArgs[1]?.body as FormData;
+      expect(formData.get('subject')).toBe('Test Subject');
+      expect(formData.get('csvFile')).toBe(dummyCsv);
+      expect(formData.get('html')).toBe('<p>Hi</p>');
+      expect(formData.has('url')).toBe(false); // Shouldn't exist if not provided
+    });
+
+    it('should correctly append arrays of attachments and exclusions to FormData', async () => {
+      vi.mocked(globalThis.fetch).mockResolvedValue({
+        ok: true,
+        json: async () => ({ processed: 5 })
+      } as Response);
+
+      const mockAttachment1 = new File(['data1'], 'att1.pdf');
+      const mockAttachment2 = new File(['data2'], 'att2.pdf');
+      const mockExclusion = new File(['bounces'], 'bounces.csv');
+
+      const payload: LaunchCampaignRequest = {
+        subject: 'Advanced Payload',
+        csvFile: dummyCsv,
+        url: 'http://example.com/template',
+        attachments: [mockAttachment1, mockAttachment2],
+        exclusions: [mockExclusion]
+      };
+
+      await apiClient.launchCampaign(payload);
+
+      const formData = vi.mocked(globalThis.fetch).mock.calls[0][1]?.body as FormData;
+
+      expect(formData.get('url')).toBe('http://example.com/template');
+      expect(formData.has('html')).toBe(false);
+
+      // FormData.getAll retrieves all files appended under the same key
+      expect(formData.getAll('attachments')).toHaveLength(2);
+      expect(formData.getAll('attachments')).toEqual([mockAttachment1, mockAttachment2]);
+
+      expect(formData.getAll('exclusions')).toHaveLength(1);
+      expect(formData.getAll('exclusions')).toEqual([mockExclusion]);
     });
 
     it('should extract the "error" property from the backend when the response is not ok', async () => {
@@ -124,9 +170,9 @@ describe('apiClient', () => {
         json: async () => ({ error: 'Invalid CSV format provided' })
       } as Response);
 
-      const formData = new FormData();
+      const payload: LaunchCampaignRequest = { subject: 'Err', csvFile: dummyCsv };
 
-      await expect(apiClient.launchCampaign(formData)).rejects.toThrow('Invalid CSV format provided');
+      await expect(apiClient.launchCampaign(payload)).rejects.toThrow('Invalid CSV format provided');
     });
 
     it('should fallback to the "message" property if "error" is not present', async () => {
@@ -135,9 +181,9 @@ describe('apiClient', () => {
         json: async () => ({ message: 'A validation message occurred' })
       } as Response);
 
-      const formData = new FormData();
+      const payload: LaunchCampaignRequest = { subject: 'Err', csvFile: dummyCsv };
 
-      await expect(apiClient.launchCampaign(formData)).rejects.toThrow('A validation message occurred');
+      await expect(apiClient.launchCampaign(payload)).rejects.toThrow('A validation message occurred');
     });
 
     it('should fallback to the HTTP status code if the backend returns unparseable HTML/text', async () => {
@@ -148,9 +194,9 @@ describe('apiClient', () => {
         json: async () => Promise.reject(new SyntaxError('Unexpected token < in JSON'))
       } as unknown as Response);
 
-      const formData = new FormData();
+      const payload: LaunchCampaignRequest = { subject: 'Err', csvFile: dummyCsv };
 
-      await expect(apiClient.launchCampaign(formData)).rejects.toThrow('Server error: 502');
+      await expect(apiClient.launchCampaign(payload)).rejects.toThrow('Server error: 502');
     });
   });
 });

@@ -21,11 +21,13 @@ By contributing to `@atao60/personal-mailing-manager`, you agree that your contr
 
 ## Roadmap
 
+- compliance with the [GDPR](https://eur-lex.europa.eu/eli/reg/2016/679/oj)
 - i18n for messages between backend and client
 - logger with pino
 - form to update contacts files
 - List of exclusions (expired, refused, ...)
 - replace textarea by a full HTML Editor to create template
+- tag for different campaigns with same name
 
 ## Code Overview
 

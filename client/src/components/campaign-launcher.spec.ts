@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 
 import { initTestI18n } from '../test-i18n-setup';
-import { CampaignLauncher } from './campaign-launcher'; // Imports and registers the custom element
+import { CampaignLauncher } from './campaign-launcher';
 import { apiClient } from '../api-client';
 import type { LaunchCampaignResponse } from '@campaign-manager/backend';
 
@@ -43,25 +43,25 @@ describe('CampaignLauncher Component', () => {
     return input;
   };
 
-  // --- Utility helper to attach a fake file ---
-  const attachFakeFile = (selector: string, filename: string, content: string) => {
+  // --- Utility helper to attach fake files ---
+  const attachFakeFiles = (selector: string, filesData: { filename: string; content: string }[]) => {
     const input = element.shadowRoot?.querySelector<HTMLInputElement>(selector);
 
     if (!(input instanceof HTMLInputElement)) {
       throw new Error(`Could not find a file input for selector: ${selector}`);
     }
 
-    const file = new File([content], filename, { type: 'text/csv' });
+    const files = filesData.map((data) => new File([data.content], data.filename, { type: 'text/csv' }));
 
     // Simulate a FileList by passing an array containing our file
     // Use Object.defineProperty to bypass JSDOM's missing DataTransfer API
     Object.defineProperty(input, 'files', {
-      value: [file],
+      value: files,
       writable: false
     });
 
     input.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-    return file;
+    return files;
   };
 
   it('should render the default state correctly', () => {
@@ -80,6 +80,7 @@ describe('CampaignLauncher Component', () => {
   it('should toggle between HTML textarea and URL input when template mode changes', async () => {
     const shadow = element.shadowRoot;
     const urlRadio = shadow?.querySelector<HTMLInputElement>('input[value="url"]');
+    const htmlRadio = shadow?.querySelector<HTMLInputElement>('input[value="html"]');
 
     // Click URL radio
     urlRadio?.click();
@@ -87,6 +88,13 @@ describe('CampaignLauncher Component', () => {
 
     expect(shadow?.querySelector('textarea')).toBeFalsy();
     expect(shadow?.querySelector('input[type="url"]')).toBeTruthy();
+
+    // Click HTML radio (Coverage for Line 129)
+    htmlRadio?.click();
+    await element.updateComplete;
+
+    expect(shadow?.querySelector('textarea')).toBeTruthy();
+    expect(shadow?.querySelector('input[type="url"]')).toBeFalsy();
   });
 
   it('should show an error if the form is submitted without a file', async () => {
@@ -104,12 +112,30 @@ describe('CampaignLauncher Component', () => {
     expect(apiClient.launchCampaign).not.toHaveBeenCalled();
   });
 
-  it('should successfully submit the form with HTML template mode', async () => {
+  // Coverage for Lines 42-43
+  it('should show an error if the form is submitted missing the subject or template content', async () => {
+    attachFakeFiles('#csv-file', [{ filename: 'contacts.csv', content: '...' }]);
+    // We explicitly DO NOT fill the #subject or textarea
+
+    const form = element.shadowRoot?.querySelector('form');
+    form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    await element.updateComplete;
+
+    const statusMessage = element.shadowRoot?.querySelector('.status.error');
+    // Ensure the error banner rendered
+    expect(statusMessage).not.toBeNull();
+    // Ensure the API was blocked
+    expect(apiClient.launchCampaign).not.toHaveBeenCalled();
+  });
+
+  it('should successfully submit the form with HTML template mode and correctly build the payload object', async () => {
     vi.mocked(apiClient.launchCampaign).mockResolvedValue({ processed: 25 } as LaunchCampaignResponse);
 
     fillInput('#subject', 'Test Subject HTML');
     fillInput('textarea', '<p>Test content</p>');
-    const fakeFile = attachFakeFile('#csv-file', 'contacts.csv', 'name,email\nAlice,alice@test.com');
+    const fakeFile = attachFakeFiles('#csv-file', [
+      { filename: 'contacts.csv', content: 'name,email\nAlice,alice@test.com' }
+    ])[0];
 
     // Submit form
     const form = element.shadowRoot?.querySelector('form');
@@ -127,12 +153,15 @@ describe('CampaignLauncher Component', () => {
 
     // Verify API call
     expect(apiClient.launchCampaign).toHaveBeenCalledTimes(1);
-    const formDataArg = vi.mocked(apiClient.launchCampaign).mock.calls[0][0];
+    const payloadArg = vi.mocked(apiClient.launchCampaign).mock.calls[0][0];
 
-    expect(formDataArg.get('subject')).toBe('Test Subject HTML');
-    expect(formDataArg.get('templateHtml')).toBe('<p>Test content</p>');
-    expect(formDataArg.get('templateUrl')).toBeNull();
-    expect(formDataArg.get('contactsCsv')).toBe(fakeFile);
+    // Assert standard object properties instead of FormData
+    expect(payloadArg.subject).toBe('Test Subject HTML');
+    expect(payloadArg.html).toBe('<p>Test content</p>');
+    expect(payloadArg.url).toBeUndefined();
+    expect(payloadArg.csvFile).toBe(fakeFile);
+    expect(payloadArg.attachments).toBeUndefined();
+    expect(payloadArg.exclusions).toBeUndefined();
 
     // Verify success message
     const statusMessage = element.shadowRoot?.querySelector('.status.success');
@@ -153,7 +182,7 @@ describe('CampaignLauncher Component', () => {
 
     fillInput('#subject', 'Test Subject URL');
     fillInput('input[type="url"]', 'https://example.com/template.html');
-    attachFakeFile('#csv-file', 'contacts.csv', '...');
+    attachFakeFiles('#csv-file', [{ filename: 'contacts.csv', content: '...' }]);
 
     // Submit form
     const form = element.shadowRoot?.querySelector('form');
@@ -162,17 +191,48 @@ describe('CampaignLauncher Component', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     await element.updateComplete;
 
-    const formDataArg = vi.mocked(apiClient.launchCampaign).mock.calls[0][0];
-    expect(formDataArg.get('templateUrl')).toBe('https://example.com/template.html');
-    expect(formDataArg.get('templateHtml')).toBeNull();
+    const payloadArg = vi.mocked(apiClient.launchCampaign).mock.calls[0][0];
+
+    // Assert standard object properties
+    expect(payloadArg.url).toBe('https://example.com/template.html');
+    expect(payloadArg.html).toBeUndefined();
   });
 
-  it('should show an error message if the API fails', async () => {
+  it('should include attachments and exclusions in the payload if they are uploaded', async () => {
+    vi.mocked(apiClient.launchCampaign).mockResolvedValue({ processed: 1 } as LaunchCampaignResponse);
+
+    fillInput('#subject', 'Full Payload');
+    fillInput('textarea', '<p>Test</p>');
+    attachFakeFiles('#csv-file', [{ filename: 'master.csv', content: '...' }]);
+
+    // Attach optional files
+    const fakeAttachments = attachFakeFiles('#attachments-file', [
+      { filename: 'doc1.pdf', content: 'pdf data' },
+      { filename: 'doc2.pdf', content: 'pdf data' }
+    ]);
+    const fakeExclusions = attachFakeFiles('#exclusions-file', [{ filename: 'bounces.csv', content: '...' }]);
+
+    // Submit form
+    const form = element.shadowRoot?.querySelector('form');
+    form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const payloadArg = vi.mocked(apiClient.launchCampaign).mock.calls[0][0];
+
+    // Assert that the arrays of files were successfully mapped to the payload
+    expect(payloadArg.attachments).toEqual(fakeAttachments);
+    expect(payloadArg.exclusions).toEqual(fakeExclusions);
+    expect(payloadArg.attachments?.length).toBe(2);
+    expect(payloadArg.exclusions?.length).toBe(1);
+  });
+
+  it('should show an error message if the API fails with a standard Error instance', async () => {
     vi.mocked(apiClient.launchCampaign).mockRejectedValue(new Error('Invalid CSV format'));
 
     fillInput('#subject', 'Fail Test');
     fillInput('textarea', 'content');
-    attachFakeFile('#csv-file', 'bad.csv', '...');
+    attachFakeFiles('#csv-file', [{ filename: 'bad.csv', content: '...' }]);
 
     const form = element.shadowRoot?.querySelector('form');
     form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
@@ -186,5 +246,44 @@ describe('CampaignLauncher Component', () => {
     // Ensure button is re-enabled
     const button = element.shadowRoot?.querySelector<HTMLButtonElement>('button[type="submit"]');
     expect(button?.disabled).toBe(false);
+  });
+
+  it('should handle raw string exceptions thrown during submission', async () => {
+    // Instead of throwing new Error(), we throw a raw string
+    vi.mocked(apiClient.launchCampaign).mockRejectedValue('A raw string error occurred');
+
+    fillInput('#subject', 'Fail Test');
+    fillInput('textarea', 'content');
+    attachFakeFiles('#csv-file', [{ filename: 'bad.csv', content: '...' }]);
+
+    const form = element.shadowRoot?.querySelector('form');
+    form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await element.updateComplete;
+
+    const statusMessage = element.shadowRoot?.querySelector('.status.error');
+    expect(statusMessage?.textContent).toContain('A raw string error occurred');
+  });
+
+  // Coverage for Lines 95-96
+  it('should gracefully handle completely unknown objects thrown during submission', async () => {
+    // We throw a random object that is neither an Error instance nor a string
+    vi.mocked(apiClient.launchCampaign).mockRejectedValue({ mysterious: 'object' });
+
+    fillInput('#subject', 'Fail Test');
+    fillInput('textarea', 'content');
+    attachFakeFiles('#csv-file', [{ filename: 'bad.csv', content: '...' }]);
+
+    const form = element.shadowRoot?.querySelector('form');
+    form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await element.updateComplete;
+
+    const statusMessage = element.shadowRoot?.querySelector('.status.error');
+    // It should render the fallback unknown error message
+    expect(statusMessage).not.toBeNull();
+    expect(statusMessage?.textContent).toBeTruthy();
   });
 });

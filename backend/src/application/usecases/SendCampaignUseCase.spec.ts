@@ -107,12 +107,12 @@ describe('SendCampaignUseCase', () => {
         totalSent: 1,
         status: 'PARTIAL',
         htmlContent: mockHtml,
-        emails: [{ address: 'alice@test.com', status: 'PENDING' }]
+        emails: [{ address: 'alice@test.com', name: 'Alice Smith', status: 'PENDING' }]
       });
     });
 
     it('should throw an error if fetching template URL returns non-ok HTTP status', async () => {
-      // 1. Spy on console.error to silence the terminal output AND track the call
+      // Spy on console.error to silence the terminal output AND track the call
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       globalThis.fetch = vi.fn().mockResolvedValue({
@@ -120,19 +120,19 @@ describe('SendCampaignUseCase', () => {
         status: 404
       } as unknown as Response);
 
-      // 2. Assert the Use Case throws the expected domain error
+      // Assert the Use Case throws the expected domain error
       // Note: the internal HTTP error is caught and wrapped in a domain error by the UseCase
       await expect(useCase.execute('contacts.csv', 'Subject', { url: 'http://example.com/404' })).rejects.toThrow(
         'Could not download template from URL http://example.com/404'
       );
 
-      // 3. Assert that your application correctly logged the underlying error
+      // Assert that your application correctly logged the underlying error
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'Could not download template from URL http://example.com/404: ',
         expect.any(Error) // Matches the "Failed to fetch template. HTTP Status: 404" error
       );
 
-      // 4. Clean up the spy so it doesn't affect other tests
+      // Clean up the spy so it doesn't affect other tests
       consoleErrorSpy.mockRestore();
     });
 
@@ -150,18 +150,20 @@ describe('SendCampaignUseCase', () => {
         'Could not download template from URL http://example.com/timeout: ',
         fetchError
       );
+
+      consoleErrorSpy.mockRestore();
     });
   });
 
   describe('Campaign Execution', () => {
-    it('should queue an email for each contact, save history, and return the processed count', async () => {
+    it('should queue an email for each contact replacing all variables, save history, and return the processed count', async () => {
       const mockContacts = [
         new Contact('c-1' as ContactId, 'Alice', 'Smith', 'alice@test.com', 'Dev', 'Acme'),
         new Contact('c-2' as ContactId, 'Bob', 'Jones', 'bob@test.com', 'QA', 'Acme')
       ];
       vi.mocked(mockCsvPort.read).mockResolvedValue(mockContacts);
 
-      const template = '<h1>Hello {{firstName}}</h1>';
+      const template = '<h1>Hello {{firstName}} {{lastName}} ({{email}})</h1>';
       const result = await useCase.execute('contacts.csv', 'Welcome', { html: template });
 
       // Verify correct count is returned
@@ -170,11 +172,11 @@ describe('SendCampaignUseCase', () => {
       // Verify email queued logic
       expect(mockEmailPort.send).toHaveBeenNthCalledWith(1, mockContacts[0], {
         subject: 'Welcome',
-        bodyHtml: '<h1>Hello Alice</h1>'
+        bodyHtml: '<h1>Hello Alice Smith (alice@test.com)</h1>'
       });
       expect(mockEmailPort.send).toHaveBeenNthCalledWith(2, mockContacts[1], {
         subject: 'Welcome',
-        bodyHtml: '<h1>Hello Bob</h1>'
+        bodyHtml: '<h1>Hello Bob Jones (bob@test.com)</h1>'
       });
       expect(mockLogger.info).toHaveBeenCalledWith('All emails successfully queued to Redis.');
 
@@ -187,9 +189,28 @@ describe('SendCampaignUseCase', () => {
         status: 'PARTIAL',
         htmlContent: template,
         emails: [
-          { address: 'alice@test.com', status: 'PENDING' },
-          { address: 'bob@test.com', status: 'PENDING' }
+          { address: 'alice@test.com', name: 'Alice Smith', status: 'PENDING' },
+          { address: 'bob@test.com', name: 'Bob Jones', status: 'PENDING' }
         ]
+      });
+    });
+
+    it('should include attachments in the email payload if provided', async () => {
+      const mockContacts = [new Contact('c-1' as ContactId, 'Alice', 'Smith', 'alice@test.com', '', '')];
+      vi.mocked(mockCsvPort.read).mockResolvedValue(mockContacts);
+
+      const mockAttachments = [{ filename: 'test.pdf', path: '/tmp/test.pdf', cid: 'test.pdf' }];
+
+      await useCase.execute('contacts.csv', 'Subject with Attachment', {
+        html: '<p>Hi</p>',
+        attachments: mockAttachments
+      });
+
+      // Verify that the attachments array was passed to the email port
+      expect(mockEmailPort.send).toHaveBeenCalledWith(mockContacts[0], {
+        subject: 'Subject with Attachment',
+        bodyHtml: '<p>Hi</p>',
+        attachments: mockAttachments
       });
     });
   });

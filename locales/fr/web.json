@@ -1,6 +1,6 @@
 {
   "about": {
-    "description": "Ce système gère les fusions de listes de diffusion et suit les campagnes e-mail asynchrones. Il aide à assurer une bonne délivrabilité et fournit un suivi détaillé des livraisons réussies et des rebonds permanents."
+    "description": "Ce système gère les fusions de listes de diffusion et suit les campagnes de courriels asynchrones. Il aide à assurer une bonne délivrabilité et fournit un suivi détaillé des livraisons réussies et des rebonds permanents."
   },
   "app": {
     "aboutTitle": "À propos de ce gestionnaire de campagnes de courriels",
@@ -51,7 +51,12 @@
     "templateSource": "Source du modèle",
     "title": "Lancer une nouvelle campagne",
     "unknownError": "Une erreur inconnue s’est produite.",
-    "urlPlaceholder": "https://example.com/template.html"
+    "urlPlaceholder": "https://example.com/template.html",
+    "attachments": "Pièce(s) jointe(s)",
+    "attachmentsHelp": "Sélectionnez un ou plusieurs fichiers à joindre à votre courriel.",
+    "exclusions": "Listes d’exclusion",
+    "exclusionsHelp": "Importez des fichiers CSV contenant les contacts à ignorer lors de cette campagne.",
+    "optional": "facultatif"
   },
   "nav": {
     "about": "À propos",

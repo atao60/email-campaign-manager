@@ -24,7 +24,7 @@ describe('MergeMailingListsUseCase', () => {
     vi.restoreAllMocks();
   });
 
-  it('should read all input files and write all contacts if there are no duplicates', async () => {
+  it('should read all input files and write all contacts if there are no duplicates and no exclusions', async () => {
     // Setup dummy contacts
     const file1Contacts = [new Contact('c-1' as ContactId, 'Alice', 'Smith', 'alice@test.com', 'Dev', 'Acme')];
     const file2Contacts = [new Contact('c-2' as ContactId, 'Bob', 'Jones', 'bob@test.com', 'QA', 'Acme')];
@@ -36,7 +36,8 @@ describe('MergeMailingListsUseCase', () => {
       return [];
     });
 
-    await useCase.execute(['list1.csv', 'list2.csv'], 'output.csv');
+    // Pass [] for excludeFiles
+    await useCase.execute(['list1.csv', 'list2.csv'], [], 'output.csv');
 
     // Verify it read both files
     expect(mockCsvPort.read).toHaveBeenCalledTimes(2);
@@ -62,14 +63,14 @@ describe('MergeMailingListsUseCase', () => {
       return [];
     });
 
-    await useCase.execute(['list1.csv', 'list2.csv'], 'output.csv');
+    await useCase.execute(['list1.csv', 'list2.csv'], [], 'output.csv');
 
     // It should keep contact1 and contact2, and completely discard contact1Duplicate
     expect(mockCsvPort.write).toHaveBeenCalledWith('output.csv', [contact1, contact2]);
   });
 
-  it('should handle an empty array of input files by writing an empty array', async () => {
-    await useCase.execute([], 'output.csv');
+  it('should handle empty arrays of input files by writing an empty array', async () => {
+    await useCase.execute([], [], 'output.csv');
 
     expect(mockCsvPort.read).not.toHaveBeenCalled();
     expect(mockCsvPort.write).toHaveBeenCalledWith('output.csv', []);
@@ -84,7 +85,7 @@ describe('MergeMailingListsUseCase', () => {
       return [];
     });
 
-    await useCase.execute(['list1.csv', 'empty.csv'], 'output.csv');
+    await useCase.execute(['list1.csv', 'empty.csv'], [], 'output.csv');
 
     expect(mockCsvPort.write).toHaveBeenCalledWith('output.csv', file1Contacts);
   });
@@ -93,9 +94,47 @@ describe('MergeMailingListsUseCase', () => {
     const readError = new Error('File not found');
     vi.mocked(mockCsvPort.read).mockRejectedValue(readError);
 
-    await expect(useCase.execute(['bad.csv'], 'output.csv')).rejects.toThrow('File not found');
+    await expect(useCase.execute(['bad.csv'], [], 'output.csv')).rejects.toThrow('File not found');
 
     // Ensure write is never called if reading fails
     expect(mockCsvPort.write).not.toHaveBeenCalled();
+  });
+
+  it('should completely ignore contacts that appear in the exclusion files', async () => {
+    const alice = new Contact('c-1' as ContactId, 'Alice', 'Smith', 'alice@test.com', '', '');
+    const bob = new Contact('c-2' as ContactId, 'Bob', 'Jones', 'bob@test.com', '', ''); // To be excluded
+    const charlie = new Contact('c-3' as ContactId, 'Charlie', 'Brown', 'charlie@test.com', '', '');
+
+    const bobExclusion = new Contact('x-1' as ContactId, '', '', 'bob@test.com', '', '');
+
+    vi.mocked(mockCsvPort.read).mockImplementation(async (file) => {
+      if (file === 'input.csv') return [alice, bob, charlie];
+      if (file === 'bounces.csv') return [bobExclusion];
+      return [];
+    });
+
+    await useCase.execute(['input.csv'], ['bounces.csv'], 'output.csv');
+
+    // Verify Bob was dropped, leaving only Alice and Charlie
+    expect(mockCsvPort.write).toHaveBeenCalledWith('output.csv', [alice, charlie]);
+  });
+
+  it('should handle exclusions case-insensitively', async () => {
+    // Contact has uppercase letters in their email
+    const uppercaseAlice = new Contact('c-1' as ContactId, 'Alice', '', 'Alice.Smith@Test.com', '', '');
+
+    // Exclusion file has everything in lowercase
+    const lowercaseAliceExclusion = new Contact('x-1' as ContactId, '', '', 'alice.smith@test.com', '', '');
+
+    vi.mocked(mockCsvPort.read).mockImplementation(async (file) => {
+      if (file === 'input.csv') return [uppercaseAlice];
+      if (file === 'excludes.csv') return [lowercaseAliceExclusion];
+      return [];
+    });
+
+    await useCase.execute(['input.csv'], ['excludes.csv'], 'output.csv');
+
+    // Alice should be successfully matched and excluded
+    expect(mockCsvPort.write).toHaveBeenCalledWith('output.csv', []);
   });
 });

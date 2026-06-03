@@ -5,7 +5,7 @@
 Small application to launch mailing campaigns from address lists stored in text files.
 No more need for Gmail, Outlook, Thunderbird, or other email clients.
 
-Work with any SMTP server such as Gmail one. Will use `Maildev` in dev mode.
+Work with any SMTP server such as Gmail one. Will use `Maildev` in development mode.
 
 It provides several interfaces: programming, REST, CLI. And a web client.
 

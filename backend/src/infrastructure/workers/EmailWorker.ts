@@ -1,4 +1,4 @@
-import { Worker, type Job } from 'bullmq';
+import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 import Redis from 'ioredis';
 import { randomUUID } from 'node:crypto';
 
@@ -39,7 +39,8 @@ export class EmailWorker {
         // 2. Execute the actual sending
         await this.actualMailer.send(contact, job.data.message);
       },
-      { connection: redisClient }
+      // ✅ FIX: Cast redisClient to bypass the strict nested-dependency type check
+      { connection: redisClient as unknown as ConnectionOptions }
     );
 
     this.worker.on('completed', (job) => {

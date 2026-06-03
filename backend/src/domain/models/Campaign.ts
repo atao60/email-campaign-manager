@@ -10,6 +10,7 @@ export interface SentCampaign extends SentCampaignSummary {
   htmlContent: string;
   emails: Array<{
     address: string;
+    name: string;
     status: 'OK' | 'FAILED' | 'PENDING';
     errorReason?: string;
   }>;

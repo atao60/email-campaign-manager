@@ -8,6 +8,7 @@ export interface CampaignSummary {
 
 export interface EmailDeliveryStatus {
   address: string;
+  name?: string;
   status: 'OK' | 'FAILED' | 'PENDING';
   errorReason?: string; // Optional, only if failed
 }

@@ -86,7 +86,7 @@ describe('CampaignHistory Component', () => {
 
     it('should load and display campaign details when a card is clicked', async () => {
       vi.mocked(apiClient.getCampaigns).mockResolvedValue([
-        { id: '1', subject: 'Promo 1', status: 'COMPLETED', sentDate: new Date().toISOString(), totalSent: 1 }
+        { id: '1', subject: 'Promo 1', status: 'COMPLETED', sentDate: new Date().toISOString(), totalSent: 2 }
       ]);
 
       const mockDetails = {
@@ -95,8 +95,11 @@ describe('CampaignHistory Component', () => {
         sentDate: '',
         status: 'COMPLETED' as const,
         htmlContent: '<h1>Hello</h1>',
-        totalSent: 1,
-        emails: [{ address: 'test@example.com', status: 'OK' as const }]
+        totalSent: 2,
+        emails: [
+          { address: 'alice@example.com', name: 'Alice Smith', status: 'OK' as const }, // With Name
+          { address: 'bob@example.com', status: 'FAILED' as const } // Without Name
+        ]
       };
       vi.mocked(apiClient.getCampaignDetails).mockResolvedValue(mockDetails);
 
@@ -120,11 +123,48 @@ describe('CampaignHistory Component', () => {
       const shadow = element.shadowRoot;
       expect(apiClient.getCampaignDetails).toHaveBeenCalledWith('1');
       expect(shadow?.textContent).toContain('← Back to List');
-      expect(shadow?.textContent).toContain('test@example.com');
+
+      // Verify Contact 1 (With Name) - Rendered as: <strong>Alice Smith</strong> <alice@example.com>
+      const strongTag = shadow?.querySelector('strong');
+      expect(strongTag).not.toBeNull();
+      expect(strongTag?.textContent).toBe('Alice Smith');
+      // The DOM textContent automatically un-escapes &lt; and &gt; back to < and >
+      expect(shadow?.textContent).toContain('<alice@example.com>');
+
+      // Verify Contact 2 (Without Name) - Rendered purely by its address string
+      expect(shadow?.textContent).toContain('bob@example.com');
+      expect(shadow?.textContent).not.toContain('<bob@example.com>'); // Should not have brackets if no name exists
 
       // Check iframe srcdoc mapping
       const iframe = shadow?.querySelector('iframe');
       expect(iframe?.getAttribute('srcdoc')).toBe('<h1>Hello</h1>');
+    });
+
+    it('should render the refreshing spinner if the selected campaign details are PARTIAL', async () => {
+      vi.mocked(apiClient.getCampaigns).mockResolvedValue([
+        { id: '1', subject: 'Promo', status: 'PARTIAL', sentDate: '', totalSent: 0 }
+      ]);
+      vi.mocked(apiClient.getCampaignDetails).mockResolvedValue({
+        id: '1',
+        subject: 'Promo',
+        status: 'PARTIAL',
+        sentDate: '',
+        htmlContent: '<h1>Hello</h1>',
+        totalSent: 0,
+        emails: []
+      });
+
+      await mountComponent();
+      await element.updateComplete;
+
+      // Click the card to go to details view
+      element.shadowRoot?.querySelector<HTMLElement>('.card')?.click();
+      await vi.advanceTimersByTimeAsync(0);
+      await element.updateComplete;
+
+      // Assert that the specific spinner DOM node was conditionally rendered
+      const spinner = element.shadowRoot?.querySelector('.spinner');
+      expect(spinner).not.toBeNull();
     });
 
     it('should return to the list view when the back button is clicked', async () => {
@@ -162,6 +202,49 @@ describe('CampaignHistory Component', () => {
       expect(shadow?.querySelector('.card')).not.toBeNull();
       expect(shadow?.querySelector('.back')).toBeNull();
       expect(shadow?.textContent).toContain('Promo');
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should gracefully handle and log errors when fetching the campaign list fails', async () => {
+      const mockError = new Error('Network timeout');
+      vi.mocked(apiClient.getCampaigns).mockRejectedValue(mockError);
+
+      await mountComponent();
+
+      // Wait for the microtask rejection to be caught
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Verify the catch block executed and logged the error
+      expect(console.error).toHaveBeenCalledWith('Failed to fetch campaigns', mockError);
+    });
+
+    it('should log errors and stop polling if fetching campaign details fails', async () => {
+      // Setup: Mock a successful list fetch to render a PARTIAL card, starting the polling interval
+      vi.mocked(apiClient.getCampaigns).mockResolvedValue([
+        { id: '1', subject: 'Promo', status: 'PARTIAL', sentDate: '', totalSent: 0 }
+      ]);
+
+      const mockError = new Error('Database disconnected');
+      vi.mocked(apiClient.getCampaignDetails).mockRejectedValue(mockError);
+
+      const clearIntervalSpy = vi.spyOn(window, 'clearInterval');
+
+      await mountComponent();
+      await element.updateComplete;
+
+      // Trigger the loadDetails method by clicking the card
+      element.shadowRoot?.querySelector<HTMLElement>('.card')?.click();
+
+      // Wait for the rejection to process
+      await vi.advanceTimersByTimeAsync(0);
+      await element.updateComplete;
+
+      // Verify the catch block executed
+      expect(console.error).toHaveBeenCalledWith('Failed to fetch details', mockError);
+
+      // Verify that this.stopPolling() successfully cleared the active interval
+      expect(clearIntervalSpy).toHaveBeenCalledTimes(1);
     });
   });
 

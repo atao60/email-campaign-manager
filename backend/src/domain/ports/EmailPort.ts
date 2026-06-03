@@ -3,6 +3,7 @@ import { type Contact } from '@domain/models/Contact';
 export interface EmailAttachmentDto {
   readonly filename: string;
   readonly path: string;
+  readonly cid?: string;
 }
 
 export interface EmailMessageDto {
