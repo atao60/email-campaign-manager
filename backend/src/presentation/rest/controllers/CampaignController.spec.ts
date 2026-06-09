@@ -91,6 +91,7 @@ describe('CampaignController', () => {
         validationError,
         mockFile,
         'Subject',
+        undefined, // no label
         undefined, // no html
         'http://example.com' // url provided
       );
@@ -105,14 +106,20 @@ describe('CampaignController', () => {
       expect(validationError).toHaveBeenCalledWith(400, { error: 'Must provide either HTML template or template URL' });
     });
 
-    it('should process campaign, create tmp folder if missing, write file, and return 202', async () => {
+    it('should process campaign with a label, create tmp folder if missing, write file, and return 202', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(false); // Simulate tmp folder missing
       sendCampaignUseCase.execute.mockResolvedValue(100);
 
       // Spy on the inherited TSOA controller method
       const setStatusSpy = vi.spyOn(controller, 'setStatus').mockImplementation(() => {});
 
-      const response = await controller.launchCampaign(validationError, mockFile, 'My Subject', '<p>Hello</p>');
+      const response = await controller.launchCampaign(
+        validationError,
+        mockFile,
+        'My Subject',
+        'Juneconcert',
+        '<p>Hello</p>'
+      );
 
       expect(fs.existsSync).toHaveBeenCalled();
       expect(fs.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('tmp'), { recursive: true });
@@ -121,7 +128,10 @@ describe('CampaignController', () => {
       expect(sendCampaignUseCase.execute).toHaveBeenCalledWith(
         expect.stringContaining('.csv'), // Temporary file path
         'My Subject',
-        { html: '<p>Hello</p>' }
+        expect.objectContaining({
+          html: '<p>Hello</p>',
+          label: 'Juneconcert'
+        })
       );
 
       expect(setStatusSpy).toHaveBeenCalledWith(202);
@@ -135,11 +145,24 @@ describe('CampaignController', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true); // Simulate tmp folder exists
       sendCampaignUseCase.execute.mockResolvedValue(5);
 
-      await controller.launchCampaign(validationError, mockFile, 'Subject', '<p>HTML</p>');
+      await controller.launchCampaign(validationError, mockFile, 'Subject', undefined, '<p>HTML</p>');
 
       expect(fs.existsSync).toHaveBeenCalled();
       expect(fs.mkdirSync).not.toHaveBeenCalled(); // Skipping directory creation
       expect(fs.writeFileSync).toHaveBeenCalled();
+    });
+
+    it('should handle missing label gracefully', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      sendCampaignUseCase.execute.mockResolvedValue(5);
+
+      await controller.launchCampaign(validationError, mockFile, 'Subject', undefined, '<p>HTML</p>');
+
+      expect(sendCampaignUseCase.execute).toHaveBeenCalledWith(
+        expect.any(String),
+        'Subject',
+        expect.not.objectContaining({ label: expect.anything() }) // Verify label is absent
+      );
     });
 
     it('should process exclusions by calling the mergeUseCase', async () => {
@@ -148,9 +171,16 @@ describe('CampaignController', () => {
 
       const mockExclusion = { buffer: Buffer.from('excl') } as Express.Multer.File;
 
-      await controller.launchCampaign(validationError, mockFile, 'Subject', '<p>HTML</p>', undefined, undefined, [
-        mockExclusion
-      ]);
+      await controller.launchCampaign(
+        validationError,
+        mockFile,
+        'Subject',
+        'Label',
+        '<p>HTML</p>',
+        undefined,
+        undefined,
+        [mockExclusion]
+      );
 
       // It should write both the master CSV and the exclusion CSV
       expect(fs.writeFileSync).toHaveBeenCalledTimes(2);
@@ -164,7 +194,8 @@ describe('CampaignController', () => {
 
       // The send campaign use case should receive the new FILTERED path
       expect(sendCampaignUseCase.execute).toHaveBeenCalledWith(expect.stringContaining('filtered-master'), 'Subject', {
-        html: '<p>HTML</p>'
+        html: '<p>HTML</p>',
+        label: 'Label'
       });
     });
 
@@ -174,7 +205,9 @@ describe('CampaignController', () => {
 
       const mockAttachment = { originalname: 'logo.png', buffer: Buffer.from('img') } as Express.Multer.File;
 
-      await controller.launchCampaign(validationError, mockFile, 'Subject', '<p>HTML</p>', undefined, [mockAttachment]);
+      await controller.launchCampaign(validationError, mockFile, 'Subject', 'Label', '<p>HTML</p>', undefined, [
+        mockAttachment
+      ]);
 
       // It should write both the master CSV and the attachment
       expect(fs.writeFileSync).toHaveBeenCalledTimes(2);
@@ -182,6 +215,7 @@ describe('CampaignController', () => {
       // The send campaign use case should receive the payload WITH attachments
       expect(sendCampaignUseCase.execute).toHaveBeenCalledWith(expect.any(String), 'Subject', {
         html: '<p>HTML</p>',
+        label: 'Label',
         attachments: [
           {
             filename: 'logo.png',
@@ -196,7 +230,7 @@ describe('CampaignController', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       sendCampaignUseCase.execute.mockRejectedValue(new Error('System crash'));
 
-      await expect(controller.launchCampaign(validationError, mockFile, 'Subject', '<p>HTML</p>')).rejects.toThrow(
+      await expect(controller.launchCampaign(validationError, mockFile, 'Subject', 'L', '<p>HTML</p>')).rejects.toThrow(
         'Internal Server Error while queueing campaign.'
       );
     });
