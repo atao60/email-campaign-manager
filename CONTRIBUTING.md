@@ -28,6 +28,7 @@ By contributing to `@atao60/personal-mailing-manager`, you agree that your contr
 - List of exclusions (expired, refused, ...)
 - replace textarea by a full HTML Editor to create template
 - tag for different campaigns with same name
+- application with its own SMTP server (see e.g. Haraka)
 
 ## Code Overview
 

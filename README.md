@@ -2,14 +2,18 @@
 
 ## 💡 Rational
 
-Small application to launch mailing campaigns from address lists stored in text files.
-No more need for Gmail, Outlook, Thunderbird, or other email clients.
+A lightweight application designed to manage and launch email campaigns, eliminating the need for traditional email clients like Gmail, Outlook, or Thunderbird.
+Think of it as a personal, dedicated Email Service Provider (ESP) hosted under your control:
 
-Work with any SMTP server such as Gmail one. Will use `Maildev` in development mode.
+- File-Based Persistence: Operates without a traditional database; all data, including address lists, are stored in text files.
+- Flexible List Management: Supports advanced address list operations, including merging and creating mutually exclusive segments.
+- Hybrid Execution Engine: Redis and BullMQ as a high-performance runtime engine (queue management, job retries, asynchronous campaigns)
+- Multi-Interface Support: Provides comprehensive control via CLI, REST API, a dedicated programming interface, and a web-based UI.
+- SMTP Versatility: Compatible with any standard SMTP provider. For development, the system integrates seamlessly with Maildev.
+- _Future Roadmap: An integrated local Mail Transfer Agent (MTA)._
 
-It provides several interfaces: programming, REST, CLI. And a web client.
-
-It's a POC on how to mix two different architectural philosophies, Hexagonal Architecture (Ports and Adapters) and Domain-Driven Design (DDD) when coding with Typescript and Node.js.
+This is also a Proof of Concept (POC) to further explore the convergence of Hexagonal Architecture (Ports and Adapters) and Domain-Driven Design (DDD).
+The entire stack — both frontend and backend — is built using TypeScript and Node.js to demonstrate how these architectural patterns can be applied consistently across a unified ecosystem.
 
 ## 🏁 Quickstart
 
