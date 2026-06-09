@@ -16,6 +16,7 @@ export class CampaignLauncher extends LitElement {
   @state() private isSubmitting = false;
   @state() private statusMessage: { type: 'success' | 'error'; text: string } | null = null;
   @state() private selectedExclusions: string[] = [];
+  @state() private selectedAttachments: string[] = [];
 
   @query('#csv-file') private readonly fileInput!: HTMLInputElement;
   @query('#attachments-file') private readonly attachmentsInput!: HTMLInputElement;
@@ -34,6 +35,14 @@ export class CampaignLauncher extends LitElement {
       this.selectedExclusions = Array.from(this.exclusionsInput.files).map((f) => f.name);
     } else {
       this.selectedExclusions = [];
+    }
+  }
+
+  private handleAttachmentsChange() {
+    if (this.attachmentsInput.files) {
+      this.selectedAttachments = Array.from(this.attachmentsInput.files).map((f) => f.name);
+    } else {
+      this.selectedAttachments = [];
     }
   }
 
@@ -95,6 +104,7 @@ export class CampaignLauncher extends LitElement {
       this.attachmentsInput.value = '';
       this.exclusionsInput.value = '';
       this.selectedExclusions = [];
+      this.selectedAttachments = [];
     } catch (error: unknown) {
       if (error instanceof Error) {
         this.statusMessage = { type: 'error', text: error.message || t('launcher.failedLaunch') };
@@ -193,8 +203,15 @@ export class CampaignLauncher extends LitElement {
 
         <div class="form-group">
           <label for="attachments-file">${t('launcher.attachments')} (${t('launcher.optional')})</label>
-          <input type="file" id="attachments-file" multiple />
+          <input type="file" id="attachments-file" multiple @change=${this.handleAttachmentsChange} />
           <small class="help-text">${t('launcher.attachmentsHelp')}</small>
+          ${this.selectedAttachments.length > 1
+            ? html`
+                <ul class="selected-files-list">
+                  ${this.selectedAttachments.map((name) => html`<li>${name}</li>`)}
+                </ul>
+              `
+            : ''}
         </div>
 
         <button type="submit" ?disabled=${this.isSubmitting}>
