@@ -15,6 +15,7 @@ export class CampaignLauncher extends LitElement {
   @state() private templateContent = '';
   @state() private isSubmitting = false;
   @state() private statusMessage: { type: 'success' | 'error'; text: string } | null = null;
+  @state() private selectedExclusions: string[] = [];
 
   @query('#csv-file') private readonly fileInput!: HTMLInputElement;
   @query('#attachments-file') private readonly attachmentsInput!: HTMLInputElement;
@@ -26,6 +27,14 @@ export class CampaignLauncher extends LitElement {
 
   private handleTemplateContentChange(e: Event) {
     this.templateContent = (e.target as HTMLTextAreaElement | HTMLInputElement).value;
+  }
+
+  private handleExclusionsChange() {
+    if (this.exclusionsInput.files) {
+      this.selectedExclusions = Array.from(this.exclusionsInput.files).map((f) => f.name);
+    } else {
+      this.selectedExclusions = [];
+    }
   }
 
   private async handleSubmit(e: Event) {
@@ -85,6 +94,7 @@ export class CampaignLauncher extends LitElement {
       this.fileInput.value = '';
       this.attachmentsInput.value = '';
       this.exclusionsInput.value = '';
+      this.selectedExclusions = [];
     } catch (error: unknown) {
       if (error instanceof Error) {
         this.statusMessage = { type: 'error', text: error.message || t('launcher.failedLaunch') };
@@ -169,8 +179,16 @@ export class CampaignLauncher extends LitElement {
 
         <div class="form-group">
           <label for="exclusions-file">${t('launcher.exclusions')} (${t('launcher.optional')})</label>
-          <input type="file" id="exclusions-file" accept=".csv" multiple />
+          <input type="file" id="exclusions-file" accept=".csv" multiple @change=${this.handleExclusionsChange} />
           <small class="help-text">${t('launcher.exclusionsHelp')}</small>
+
+          ${this.selectedExclusions.length > 1
+            ? html`
+                <ul class="selected-files-list">
+                  ${this.selectedExclusions.map((name) => html`<li>${name}</li>`)}
+                </ul>
+              `
+            : ''}
         </div>
 
         <div class="form-group">

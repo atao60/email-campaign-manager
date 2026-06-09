@@ -95,3 +95,14 @@ button:disabled {
   background-color: #f8d7da;
   color: #721c24;
 }
+
+.selected-files-list {
+  margin-top: 0.5rem;
+  padding-left: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-color-secondary, #666);
+
+  li {
+    margin-bottom: 0.25rem;
+  }
+}
