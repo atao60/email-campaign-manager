@@ -10,6 +10,7 @@ import styles from './campaign-launcher.scss' with { type: 'css' };
 export class CampaignLauncher extends LitElement {
   static readonly styles = styles;
 
+  @state() private campaignLabel = '';
   @state() private subject = '';
   @state() private templateMode: 'html' | 'url' = 'html';
   @state() private templateContent = '';
@@ -21,6 +22,10 @@ export class CampaignLauncher extends LitElement {
   @query('#csv-file') private readonly fileInput!: HTMLInputElement;
   @query('#attachments-file') private readonly attachmentsInput!: HTMLInputElement;
   @query('#exclusions-file') private readonly exclusionsInput!: HTMLInputElement;
+
+  private handleLabelChange(e: Event) {
+    this.campaignLabel = (e.target as HTMLInputElement).value;
+  }
 
   private handleSubjectChange(e: Event) {
     this.subject = (e.target as HTMLInputElement).value;
@@ -69,6 +74,11 @@ export class CampaignLauncher extends LitElement {
       subject: this.subject
     };
 
+    // Attach the label to the payload if the user provided one
+    if (this.campaignLabel.trim()) {
+      payload.label = this.campaignLabel.trim();
+    }
+
     // Attach the correct template key
     if (this.templateMode === 'html') {
       payload.html = this.templateContent;
@@ -98,6 +108,7 @@ export class CampaignLauncher extends LitElement {
       };
 
       // Reset form on success
+      this.campaignLabel = '';
       this.subject = '';
       this.templateContent = '';
       this.fileInput.value = '';
@@ -125,6 +136,17 @@ export class CampaignLauncher extends LitElement {
       <h2>${t('launcher.title')}</h2>
 
       <form @submit=${this.handleSubmit}>
+        <div class="form-group">
+          <label for="campaign-label">${t('launcher.campaignLabel')} (${t('launcher.optional')})</label>
+          <input
+            type="text"
+            id="campaign-label"
+            .value=${this.campaignLabel}
+            @input=${this.handleLabelChange}
+            placeholder=${t('launcher.labelPlaceholder')}
+          />
+        </div>
+
         <div class="form-group">
           <label for="subject">${t('launcher.emailSubject')}</label>
           <input

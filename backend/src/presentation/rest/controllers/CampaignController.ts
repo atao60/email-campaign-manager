@@ -36,6 +36,7 @@ interface MergePayload {
 interface BaseSendCampaignPayload {
   contactsFilePath: string;
   subject: string;
+  label?: string;
 }
 
 export interface SendCampaignHtmlTemplatePayload extends BaseSendCampaignPayload {
@@ -98,6 +99,7 @@ export class CampaignController extends Controller {
     // FORM DATA (Inputs - Required first, Optional last)
     @UploadedFile('csvFile') contactsCsv: Express.Multer.File, // ---> csvFile
     @FormField() subject: string,
+    @FormField() label?: string,
     @FormField('html') templateHtml?: string,
     @FormField('url') templateUrl?: string,
     @UploadedFiles() attachments?: Express.Multer.File[],
@@ -108,6 +110,7 @@ export class CampaignController extends Controller {
       // 🛑 TEST:
       console.log('🚨 [CONTROLLER HIT] The frontend successfully reached launchCampaign!');
       console.log('Subject received:', subject);
+      console.log('Label received:', label);
       console.log('File received:', contactsCsv ? 'Yes' : 'No');
       let finalHtmlContent: string;
 
@@ -132,46 +135,16 @@ export class CampaignController extends Controller {
       writeFileSync(tempCvsFilePath, contactsCsv.buffer);
 
       // Process Exclusions (If any)
-      let finalTargetCsvPath = tempCvsFilePath;
-      console.log('CampaignController.launchCampaign, initial finalTargetCsvPath: ', finalTargetCsvPath);
-
-      if (exclusions && exclusions.length > 0) {
-        const exclusionPaths: string[] = [];
-
-        // Write all exclusion files to disk temporarily
-        for (let i = 0; i < exclusions.length; i++) {
-          const exPath = join(tmpDir, `excl-${Date.now()}-${i}.csv`);
-          writeFileSync(exPath, exclusions[i]!.buffer);
-          exclusionPaths.push(exPath);
-        }
-
-        // Run the deduplication/exclusion use case
-        finalTargetCsvPath = join(tmpDir, `filtered-master-${Date.now()}.csv`);
-        await this.mergeUseCase.execute([tempCvsFilePath], exclusionPaths, finalTargetCsvPath);
-      }
+      const finalTargetCsvPath = await this.processExclusions(tempCvsFilePath, exclusions, tmpDir);
       console.log('CampaignController.launchCampaign, final finalTargetCsvPath: ', finalTargetCsvPath);
+
       // Process and save Attachments to disk
-      const processedAttachments: EmailAttachmentDto[] = [];
+      const processedAttachments = this.processAttachments(attachments, tmpDir);
 
-      if (attachments && attachments.length > 0) {
-        for (const att of attachments) {
-          // Use originalname but prepend timestamp to prevent overwriting files with the same name
-          const attPath = join(tmpDir, `att-${Date.now()}-${att.originalname}`);
-          writeFileSync(attPath, att.buffer);
-
-          processedAttachments.push({
-            filename: att.originalname,
-            path: attPath,
-            // Assign the original filename as the Content-ID
-            // This allows the user to simply write: <img src="cid:logo.png" />
-            cid: att.originalname
-          });
-        }
-      }
-
-      // 3. Execute the business logic using the temporary file path
+      // Execute the business logic using the temporary file path
       const templatePayload = {
         html: finalHtmlContent,
+        ...(label && { label }),
         ...(processedAttachments.length > 0 && { attachments: processedAttachments })
       };
       const processedCount = await this.sendCampaignUseCase.execute(finalTargetCsvPath, subject, templatePayload);
@@ -190,6 +163,50 @@ export class CampaignController extends Controller {
       console.error(`Launch campaign error:`, error);
       throw new Error('Internal Server Error while queueing campaign.', { cause: error });
     }
+  }
+
+  /**
+   * Helper: Writes exclusion files to disk and triggers the merge/deduplication use case.
+   */
+  private async processExclusions(
+    masterCsvPath: string,
+    exclusions: Express.Multer.File[] | undefined,
+    tmpDir: string
+  ): Promise<string> {
+    if (!exclusions || exclusions.length < 1) {
+      return masterCsvPath;
+    }
+
+    const exclusionPaths = exclusions.map((file, i) => {
+      const exPath = join(tmpDir, `excl-${Date.now()}-${i}.csv`);
+      writeFileSync(exPath, file.buffer);
+      return exPath;
+    });
+
+    const finalTargetCsvPath = join(tmpDir, `filtered-master-${Date.now()}.csv`);
+    await this.mergeUseCase.execute([masterCsvPath], exclusionPaths, finalTargetCsvPath);
+
+    return finalTargetCsvPath;
+  }
+
+  /**
+   * Helper: Writes attachment buffers to disk and maps them to Domain DTOs.
+   */
+  private processAttachments(attachments: Express.Multer.File[] | undefined, tmpDir: string): EmailAttachmentDto[] {
+    if (!attachments || attachments.length === 0) {
+      return [];
+    }
+
+    return attachments.map((att) => {
+      const attPath = join(tmpDir, `att-${Date.now()}-${att.originalname}`);
+      writeFileSync(attPath, att.buffer);
+
+      return {
+        filename: att.originalname,
+        path: attPath,
+        cid: att.originalname
+      };
+    });
   }
 
   /**

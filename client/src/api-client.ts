@@ -1,8 +1,4 @@
-import type {
-  CampaignDetail,
-  CampaignSummary,
-  LaunchCampaignResponse
-} from '../../backend/src/presentation/rest/dto/CampaignDTO';
+import type { CampaignDetail, CampaignSummary, LaunchCampaignResponse } from '@campaign-manager/backend';
 
 // FUTURE to be shared with backend/src/domain/models/CampaignStatus.ts?
 export interface CampaignStatus {
@@ -16,6 +12,7 @@ export interface CampaignStatus {
 export interface LaunchCampaignRequest {
   csvFile: File;
   subject: string;
+  label?: string;
   html?: string;
   url?: string;
   attachments?: File[];
@@ -60,6 +57,11 @@ export const apiClient = {
     formData.append('csvFile', payload.csvFile);
     formData.append('subject', payload.subject);
 
+    // Add the optional label field
+    if (payload.label) {
+      formData.append('label', payload.label);
+    }
+
     // Conditionally append the templates so we don't send "undefined" as a string
     if (payload.html) {
       formData.append('html', payload.html);
@@ -88,6 +90,7 @@ export const apiClient = {
 
     const response = await fetch(`${API_BASE_URL}/campaigns/send`, {
       method: 'POST',
+      // Notice: No 'Content-Type' header! The browser sets the multipart boundary automatically.
       body: formData
     });
 

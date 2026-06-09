@@ -68,7 +68,10 @@ export class CampaignHistory extends LitElement {
   }
 
   private setupListPolling() {
-    if (this.pollInterval !== null) return; // Already polling
+    if (this.pollInterval !== null) {
+      // Already polling
+      return;
+    }
 
     this.pollInterval = window.setInterval(() => {
       if (this.selectedCampaign) {
@@ -127,6 +130,13 @@ export class CampaignHistory extends LitElement {
     return 'badge-fail';
   }
 
+  private scrollToTemplatePreview() {
+    const previewSection = this.shadowRoot?.getElementById('template-preview');
+    if (previewSection) {
+      previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   renderList() {
     if (this.campaigns.length === 0) {
       return html`<p>${t('history.none')}</p>`;
@@ -135,18 +145,22 @@ export class CampaignHistory extends LitElement {
     const isAnyPending = this.campaigns.some((c) => c.status === 'PARTIAL');
 
     return html`
-      <div style="display: flex; justify-content: space-between;">
+      <div class="list-header">
         <h2>${t('history.title')}</h2>
         ${isAnyPending ? html`<span class="live-indicator">${t('history.live')}</span>` : ''}
       </div>
       ${this.campaigns.map(
         (c) => html`
           <div class="card" @click=${() => this.loadDetails(c.id)}>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <h3 style="margin: 0 0 0.5rem 0;">${c.subject}</h3>
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">${c.label || c.subject}</h3>
+
+                ${c.label ? html`<div class="card-subtitle">${c.subject}</div>` : ''}
+              </div>
               <span class="status-badge ${this.getBadgeClass(c.status)}">${t('history.status.' + c.status)}</span>
             </div>
-            <p style="margin: 0; color: #64748b;">
+            <p class="card-meta">
               ${t('history.sentTotal', { sent: new Date(c.sentDate).toLocaleString(), total: c.totalSent })}
             </p>
           </div>
@@ -168,15 +182,27 @@ export class CampaignHistory extends LitElement {
 
     return html`
       <button class="back" @click=${this.handleBackClick}>${t('history.back')}</button>
-      <h2>${c.subject}</h2>
 
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <h2>${c.subject}</h2>
-        <span class="status-badge ${this.getBadgeClass(c.status)}">${t('history.status.' + c.status)}</span>
-        ${c.status === 'PARTIAL' ? html`<span class="spinner">${t('history.refreshing')}</span>` : ''}
+      ${c.label ? html`<div class="details-label">${c.label}</div>` : ''}
+
+      <div class="details-header-layout">
+        <div>
+          <h2 class="details-title">${c.label || c.subject}</h2>
+
+          ${c.label ? html`<div class="details-subtitle">${c.subject}</div>` : ''}
+        </div>
+
+        <div class="details-status-group">
+          <span class="status-badge ${this.getBadgeClass(c.status)}">${t('history.status.' + c.status)}</span>
+          ${c.status === 'PARTIAL' ? html`<span class="spinner">${t('history.refreshing')}</span>` : ''}
+        </div>
       </div>
 
-      <h3>${t('history.deliveryStatus', { total: c.totalSent })}</h3>
+      <div class="delivery-header-group">
+        <h3>${t('history.deliveryStatus', { total: c.totalSent })}</h3>
+        <button class="jump-link" @click=${this.scrollToTemplatePreview}>↓ ${t('history.jumpToPreview')}</button>
+      </div>
+
       <ul>
         ${c.emails.map(
           (email: EmailDeliveryStatus) => html`
@@ -192,7 +218,7 @@ export class CampaignHistory extends LitElement {
         )}
       </ul>
 
-      <h3>${t('history.templatePreview')}</h3>
+      <h3 id="template-preview">${t('history.templatePreview')}</h3>
       <iframe srcdoc=${c.htmlContent}></iframe>
     `;
   }

@@ -71,6 +71,7 @@ export class NodemailerAdapter implements EmailPort {
         to: toAddress,
         subject: `[DEV] ${message.subject}`,
         html: message.bodyHtml,
+        headers: message.label ? { 'X-Campaign-Label': message.label } : undefined,
         attachments: message.attachments
       });
       this.logger.info(`✉️ [DEV] Email intercepted by local NodemailerAdapter for: ${toAddress}`);

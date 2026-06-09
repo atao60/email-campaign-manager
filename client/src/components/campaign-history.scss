@@ -4,6 +4,26 @@
 h2 {
   color: #2c3e50;
 }
+
+/* --- Layout Containers --- */
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.details-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+/* --- Card Styles --- */
 .card {
   background: white;
   border: 1px solid #e2e8f0;
@@ -11,28 +31,110 @@ h2 {
   border-radius: 8px;
   margin-bottom: 1rem;
   cursor: pointer;
-  transition: shadow 0.2s;
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
+
 .card:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border-color: #cbd5e1;
 }
 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.card-meta {
+  margin: 0;
+  color: #64748b;
+}
+
+/* --- Typography for Titles & Subtitles --- */
+.card-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.card-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.details-header-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.details-title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.5rem;
+}
+
+.details-subtitle {
+  font-size: 1rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.details-status-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* --- Badges & Indicators --- */
 .status-badge {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.85rem;
   font-weight: bold;
 }
+
 .badge-ok {
   background: #dcfce7;
   color: #166534;
 }
+
 .badge-fail {
   background: #fee2e2;
   color: #991b1b;
 }
 
+.badge-pending {
+  background: #fef3c7; /* Amber/Yellow */
+  color: #92400e;
+}
+
+.live-indicator {
+  font-size: 0.85rem;
+  color: #ea580c;
+  font-weight: bold;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.spinner {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* --- Controls & Elements --- */
 button.back {
   background: #f1f5f9;
   border: none;
@@ -41,6 +143,7 @@ button.back {
   cursor: pointer;
   margin-bottom: 1rem;
 }
+
 button.back:hover {
   background: #e2e8f0;
 }
@@ -53,6 +156,7 @@ iframe {
   margin: 1rem 0;
   background: white;
 }
+
 ul {
   list-style: none;
   padding: 0;
@@ -61,12 +165,42 @@ ul {
   border-radius: 8px;
   border: 1px solid #e2e8f0;
 }
+
 li {
   padding: 1rem;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
 }
+
 li:last-child {
   border-bottom: none;
+}
+
+.delivery-header-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+
+  h3 {
+    margin-bottom: 0;
+  }
+}
+
+button.jump-link {
+  background: none;
+  border: none;
+  color: #2563eb; /* A standard interactive blue */
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+
+  &:hover {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+  }
 }

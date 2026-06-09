@@ -13,7 +13,7 @@ export class SendCampaignUseCase {
   public async execute(
     contactsFilePath: string,
     subject: string,
-    template: { html?: string; url?: string; attachments?: EmailAttachmentDto[] }
+    template: { label?: string; html?: string; url?: string; attachments?: EmailAttachmentDto[] }
   ): Promise<number> {
     // Resolve the HTML Content
     let templateHtml: string;
@@ -58,6 +58,7 @@ export class SendCampaignUseCase {
       const messagePayload: EmailMessageDto = {
         subject: subject,
         bodyHtml: personalizedHtml,
+        ...(template.label && { label: template.label }),
         ...(template.attachments && { attachments: template.attachments })
       };
       await this.emailPort.send(contact, messagePayload);
@@ -75,6 +76,7 @@ export class SendCampaignUseCase {
     const campaignRecord: SentCampaign = {
       id: `camp_${Date.now()}`,
       subject: subject,
+      ...(template.label && { label: template.label }),
       sentDate: new Date().toISOString(),
       totalSent: contacts.length,
       status: 'PARTIAL', // It stays PARTIAL until webhooks confirm delivery or failure

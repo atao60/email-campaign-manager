@@ -27,7 +27,8 @@
     "selectPrompt": "Please select a campaign to view its details.",
     "sentTotal": "Sent: {{sent}} | Total: {{total}}",
     "templatePreview": "Template Preview",
-    "title": "Campaign History"
+    "title": "Campaign History",
+    "jumpToPreview": "Aller à l'aperçu"
   },
   "launcher": {
     "contactsCsv": "Contacts (CSV File)",
@@ -51,6 +52,8 @@
     "attachmentsHelp": "Select one or multiple files to attach to your email.",
     "exclusions": "Exclusion Lists",
     "exclusionsHelp": "Upload CSV files containing contacts to exclude from this campaign.",
+    "campaignLabel": "Campaign Label",
+    "labelPlaceholder": "e.g., Concert June 2026",
     "optional": "optional"
   },
   "nav": {

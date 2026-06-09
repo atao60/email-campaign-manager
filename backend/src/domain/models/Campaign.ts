@@ -1,5 +1,6 @@
 export interface SentCampaignSummary {
   id: string;
+  label?: string;
   subject: string;
   sentDate: string; // ISO string
   totalSent: number;

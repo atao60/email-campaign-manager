@@ -78,6 +78,7 @@ export class GmailSmtpAdapter implements EmailPort {
       subject: message.subject,
       html: message.bodyHtml,
       replyTo: this.replyTo,
+      headers: message.label ? { 'X-Campaign-Label': message.label } : undefined,
       attachments: message.attachments?.map((att) => ({
         filename: att.filename,
         path: att.path,

@@ -50,14 +50,18 @@ export async function startCli(container: DiContainer): Promise<void> {
     .command('send-campaign')
     .description('Read contacts from a CSV and send them a campaign email')
     .argument('<csvFile>', 'Path to the CSV contacts list')
-    .action(async (csvFile) => {
+    .option('-l, --label <label>', 'Optional label to designate the campaign')
+    .action(async (csvFile, options) => {
       const useCase = container.resolve(DI_TYPES.SendCampaignUseCase);
 
       const subject = 'Welcome to our new platform!';
       const html = '<h1>Hello {{firstName}},</h1><p>We are thrilled to have you.</p>';
 
       try {
-        const count = await useCase.execute(csvFile, subject, { html });
+        const count = await useCase.execute(csvFile, subject, {
+          html,
+          ...(options.label && { label: options.label })
+        });
 
         outputService.success('cli:commands.sendCampaign.success', { count: count.toString(), file: csvFile });
 

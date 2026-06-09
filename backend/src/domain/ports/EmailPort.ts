@@ -9,6 +9,7 @@ export interface EmailAttachmentDto {
 export interface EmailMessageDto {
   readonly subject: string;
   readonly bodyHtml: string;
+  readonly label?: string;
   readonly attachments?: EmailAttachmentDto[];
 }
 

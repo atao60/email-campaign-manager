@@ -28,11 +28,7 @@
     "sentTotal": "Envoyés\u00A0: {{sent}} | Total\u00A0: {{total}}",
     "templatePreview": "Aperçu du modèle",
     "title": "Historique des campagnes",
-    "status": {
-      "PARTIAL": "EN COURS",
-      "COMPLETED": "TERMINÉS",
-      "FAILED": "EN ÉCHEC"
-    }
+    "jumpToPreview": "Jump to Preview"
   },
   "launcher": {
     "contactsCsv": "Contacts (fichier CSV)",
@@ -56,6 +52,8 @@
     "attachmentsHelp": "Sélectionnez un ou plusieurs fichiers à joindre à votre courriel.",
     "exclusions": "Listes d’exclusion",
     "exclusionsHelp": "Importez des fichiers CSV contenant les contacts à ignorer lors de cette campagne.",
+    "campaignLabel": "Libellé de la campagne",
+    "labelPlaceholder": "Ex.\u00A0: concert juin 2026",
     "optional": "facultatif"
   },
   "nav": {
