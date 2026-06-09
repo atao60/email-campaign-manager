@@ -22,7 +22,7 @@ import { cwd, argv, exit } from 'node:process';
 const targetFile = argv[2];
 
 if (!targetFile) {
-  console.error('❌ Please specify a file to clean (e.g. tsx clean-paths.ts client-graph.md).');
+  console.error('❌ Please specify a file to clean (e.g., tsx clean-paths.ts client-graph.md).');
   exit(1);
 }
 

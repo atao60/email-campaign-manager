@@ -12,7 +12,7 @@ Mixing them up can harm both the user experience and the application monitoring:
 
 1. Structured message vs. user readable message
 
-Often the log message are structured to be used by automatic tools, e.g. in json. Therefore not ready to be read by a user.
+Often the log message are structured to be used by automatic tools, e.g., in json. Therefore not ready to be read by a user.
 
 3. The UNIX Philosophy
 
