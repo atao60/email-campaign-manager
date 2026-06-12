@@ -1,20 +1,17 @@
 import { join } from 'node:path';
-import { cwd } from 'node:process';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import AsyncLock from 'async-lock';
 
 import type { CampaignHistoryRepository } from '@domain/repositories';
 import type { SentCampaign } from '@domain/models/Campaign';
 
-const DEFAULT_HISTORY_DIR = join(cwd(), 'data', 'history');
-
 export class FileSystemCampaignHistoryRepositoryAdapter implements CampaignHistoryRepository {
   private readonly storageDir: string;
   private readonly lock: AsyncLock;
 
-  constructor(storageDir?: string) {
+  constructor(storageDir: string) {
     // Default to a 'history' folder in the backend root
-    this.storageDir = storageDir || DEFAULT_HISTORY_DIR;
+    this.storageDir = storageDir;
     // Initialize the lock mechanism
     this.lock = new AsyncLock();
   }

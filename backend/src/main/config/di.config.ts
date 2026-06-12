@@ -8,7 +8,7 @@ import type { EmailPort } from '@domain/ports';
 import { EmailWorker } from '@infrastructure/workers/EmailWorker';
 
 // Adapters
-import { ConsoleLogger } from '@infrastructure/services/ConsoleLogger'; // Assuming a basic logger
+import { ConsoleLogger } from '@infrastructure/services/ConsoleLogger';
 import { I18nextLanguageAdapter } from '@infrastructure/adapters/I18nextLanguageAdapter';
 import { NodemailerAdapter } from '@infrastructure/adapters/email/NodemailerAdapter';
 import { GmailSmtpAdapter } from '@infrastructure/adapters/email/GmailSmtpAdapter';
@@ -17,6 +17,8 @@ import { RedisEmailQueueAdapter } from '@infrastructure/adapters/RedisEmailQueue
 import { JsonFailedEmailRepositoryAdapter } from '@infrastructure/adapters/repositories/JsonFailedEmailRepositoryAdapter';
 import { BullMqMonitorAdapter } from '@infrastructure/adapters/BullMqMonitorAdapter';
 import { FileSystemCampaignHistoryRepositoryAdapter } from '@infrastructure/adapters/repositories/FileSystemCampaignHistoryRepositoryAdapter';
+import { FileContactRepositoryAdapter } from '@infrastructure/adapters/repositories/FileContactRepositoryAdapter';
+import { SystemTimeProvider } from '@infrastructure/adapters/SystemTimeProvider';
 
 // Presentation & Use Cases
 import {
@@ -25,10 +27,14 @@ import {
   GetCampaignsUseCase,
   GetCampaignDetailsUseCase,
   GetCampaignStatusUseCase,
-  UpdateDeliveryStatusUseCase
+  UpdateDeliveryStatusUseCase,
+  ResolveCampaignContactsUseCase,
+  MonitorExpiringConsentsUseCase
 } from '@application/usecases';
 
 import { CliOutputService } from '@presentation/cli/services/CliOutputService';
+import { DevDataSeeder } from '@infrastructure/dev/DevDataSeeder';
+import { NoOpDataSeeder } from '@infrastructure/dev/NoOpDataSeeder';
 
 interface InfraDependencies {
   [INFRA_TYPES.RedisClient]: Redis;
@@ -43,20 +49,29 @@ function resolveInfra<K extends keyof InfraDependencies>(c: DiContainer, key: K)
 export function configureDependencyInjection(): void {
   const container = DiContainer.getInstance();
 
-  // 1. Core Services & Connections
+  /* Core Services & Connections */
   container.registerSingleton(DI_TYPES.Logger, () => new ConsoleLogger());
-  container.registerSingleton(DI_TYPES.LanguageService, () => new I18nextLanguageAdapter());
+  container.registerSingleton(
+    DI_TYPES.LanguageService,
+    () => new I18nextLanguageAdapter(envConfig.app.defaultLanguage)
+  );
   container.registerSingleton(INFRA_TYPES.RedisClient, () => new Redis({ maxRetriesPerRequest: null }));
 
-  // 2. Adapters
+  container.registerSingleton(DI_TYPES.TimeProvider, () => new SystemTimeProvider());
+
+  /* Adapters & Repositories */
   container.registerSingleton(DI_TYPES.CsvPort, () => new CsvAdapter());
 
   container.registerSingleton(DI_TYPES.FailedEmailRepository, () => new JsonFailedEmailRepositoryAdapter());
 
-  // FUTURE in memory as dev mod and in files as staging mode?
   container.registerSingleton(
     DI_TYPES.CampaignHistoryRepository,
-    () => new FileSystemCampaignHistoryRepositoryAdapter()
+    () => new FileSystemCampaignHistoryRepositoryAdapter(envConfig.app.campaignsDirectory)
+  );
+
+  container.registerSingleton(
+    DI_TYPES.ContactRepository,
+    () => new FileContactRepositoryAdapter(envConfig.app.contactsDirectory)
   );
 
   // 📨 STAGE CONFIGURATION: Direct Mailer (Physical Sender)
@@ -96,7 +111,7 @@ export function configureDependencyInjection(): void {
     (c) => new BullMqMonitorAdapter(resolveInfra(c, INFRA_TYPES.RedisClient))
   );
 
-  // 3. Background Workers
+  /* Background Workers */
   container.registerSingleton(
     INFRA_TYPES.EmailWorker,
     (c) =>
@@ -104,11 +119,27 @@ export function configureDependencyInjection(): void {
         resolveInfra(c, INFRA_TYPES.RedisClient),
         resolveInfra(c, INFRA_TYPES.DirectMailer),
         c.resolve(DI_TYPES.FailedEmailRepository),
-        c.resolve(DI_TYPES.Logger)
+        c.resolve(DI_TYPES.Logger),
+        c.resolve(DI_TYPES.TimeProvider)
       )
   );
 
-  // 4. Use Cases
+  // GDPR data seeder in dev mode
+  if (envConfig.env === 'development') {
+    container.registerSingleton(
+      DI_TYPES.DataSeeder,
+      (c) =>
+        new DevDataSeeder(
+          c.resolve(DI_TYPES.ContactRepository),
+          c.resolve(DI_TYPES.TimeProvider),
+          c.resolve(DI_TYPES.Logger)
+        )
+    );
+  } else {
+    container.registerSingleton(DI_TYPES.DataSeeder, () => new NoOpDataSeeder());
+  }
+
+  /* Use Cases */
   container.registerSingleton(
     DI_TYPES.MergeMailingListsUseCase,
     (c) => new MergeMailingListsUseCase(c.resolve(DI_TYPES.CsvPort))
@@ -121,7 +152,8 @@ export function configureDependencyInjection(): void {
         c.resolve(DI_TYPES.CsvPort),
         c.resolve(DI_TYPES.EmailPort),
         c.resolve(DI_TYPES.Logger),
-        c.resolve(DI_TYPES.CampaignHistoryRepository)
+        c.resolve(DI_TYPES.CampaignHistoryRepository),
+        c.resolve(DI_TYPES.TimeProvider)
       )
   );
 
@@ -145,7 +177,36 @@ export function configureDependencyInjection(): void {
     (c) => new UpdateDeliveryStatusUseCase(c.resolve(DI_TYPES.CampaignHistoryRepository))
   );
 
-  // 5. Presentation
+  container.registerSingleton(
+    DI_TYPES.ResolveCampaignContactsUseCase,
+    (c) =>
+      new ResolveCampaignContactsUseCase(
+        c.resolve(DI_TYPES.ContactRepository),
+        c.resolve(DI_TYPES.CsvPort),
+        c.resolve(DI_TYPES.Logger),
+        c.resolve(DI_TYPES.TimeProvider)
+      )
+  );
+
+  container.registerSingleton(
+    DI_TYPES.MonitorExpiringConsentsUseCase,
+    (c) =>
+      new MonitorExpiringConsentsUseCase(
+        c.resolve(DI_TYPES.ContactRepository),
+        c.resolve(DI_TYPES.EmailPort),
+        c.resolve(DI_TYPES.Logger),
+        c.resolve(DI_TYPES.LanguageService),
+        c.resolve(DI_TYPES.TimeProvider),
+        {
+          consentValidityYears: envConfig.gdpr.consentValidityYears,
+          renewalDaysLimit: envConfig.gdpr.renewalDaysLimit,
+          frontendUrl: envConfig.app.frontendUrl,
+          checkingPeriodicity: envConfig.gdpr.checkingPeriodicity
+        }
+      )
+  );
+
+  /* Presentation */
   container.registerSingleton(
     PRESENTATION_TYPES.CliOutputService,
     (c) => new CliOutputService(c.resolve(DI_TYPES.LanguageService))

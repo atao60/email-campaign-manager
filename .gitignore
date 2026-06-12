@@ -148,6 +148,7 @@ generated/
 tmp/
 **/data/history/
 **/data/private/
+**/data/contacts/
 DEPENDENCIES-LICENSES*
 licenses
 third-party-notices.*

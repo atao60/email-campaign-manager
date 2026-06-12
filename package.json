@@ -54,7 +54,9 @@
     "i18n:migrate": "tsx scripts/i18n-migrate-to-shadow.ts",
     "i18n:extract-web": "npm run i18n:extract -w @campaign-manager/client",
     "i18n:extract-cli": "npm run i18n:extract -w @campaign-manager/backend",
-    "i18n:restore": "tsx scripts/i18n-restore.ts"
+    "i18n:restore": "tsx scripts/i18n-restore.ts",
+    "gdpr-check:dev": "npm run dev:gdpr-check -w @campaign-manager/backend",
+    "gdpr-check:full:dev": "npm run dev:reset:gdpr-check -w @campaign-manager/backend"
   },
   "engines": {
     "node": ">=24.15.0",
@@ -69,7 +71,7 @@
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^25.7.0",
     "@ysk8hori/typescript-graph": "^0.26.5",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
@@ -102,6 +104,8 @@
     "mailing",
     "email",
     "campaign",
+    "RGPD",
+    "GDPR",
     "typescript",
     "server",
     "client",
@@ -116,10 +120,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/atao60/personal-mailing-manager.git"
+    "url": "git+https://github.com/atao60/email-campaign-manager.git"
   },
   "bugs": {
-    "url": "https://github.com/atao60/personal-mailing-manager/issues"
+    "url": "https://github.com/atao60/email-campaign-manager/issues"
   },
-  "homepage": "https://github.com/atao60/personal-mailing-manager#readme"
+  "homepage": "https://github.com/atao60/email-campaign-manager#readme"
 }

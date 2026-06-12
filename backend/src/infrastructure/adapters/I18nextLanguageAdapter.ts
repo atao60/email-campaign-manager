@@ -7,11 +7,13 @@ import { type LanguagePort } from '@domain/ports';
 export const DEFAULT_LANGUAGE = 'fr';
 
 export class I18nextLanguageAdapter implements LanguagePort {
+  constructor(private readonly defaultLanguage: string) {}
+
   public async init(): Promise<void> {
     // Helper to safely load JSON files without crashing if they don't exist yet
-    const loadTranslations = async (locale: string) => {
+    const loadTranslations = async (locale: string, namespace: string) => {
       try {
-        const filePath = path.join(cwd(), 'locales', locale, 'cli.json');
+        const filePath = path.join(cwd(), 'locales', locale, `${namespace}.json`);
         const fileContent = await fs.readFile(filePath, 'utf-8');
         return JSON.parse(fileContent);
       } catch {
@@ -19,18 +21,34 @@ export class I18nextLanguageAdapter implements LanguagePort {
       }
     };
 
-    const frTranslations = await loadTranslations('fr');
-    const enTranslations = await loadTranslations('en');
+    // Load both the CLI and Email translation files
+    const frCli = await loadTranslations('fr', 'cli');
+    const enCli = await loadTranslations('en', 'cli');
+
+    const frEmail = await loadTranslations('fr', 'email');
+    const enEmail = await loadTranslations('en', 'email');
 
     await i18next.init({
       lng: DEFAULT_LANGUAGE,
       fallbackLng: 'en',
+
+      // Register your namespaces
+      ns: ['cli', 'email'],
+
+      // Set the default namespace to 'cli' so your existing code doesn't break
+      defaultNS: 'cli',
       resources: {
-        fr: { translation: frTranslations },
-        en: { translation: enTranslations }
+        fr: {
+          cli: frCli,
+          email: frEmail
+        },
+        en: {
+          cli: enCli,
+          email: enEmail
+        }
       },
       interpolation: {
-        escapeValue: false // CLI doesn't need HTML escaping
+        escapeValue: false // Backend services and CLI don't need HTML escaping
       }
     });
   }

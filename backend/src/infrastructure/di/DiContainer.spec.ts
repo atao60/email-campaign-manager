@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { DiContainer } from './DiContainer';
@@ -6,8 +7,8 @@ describe('DiContainer', () => {
   let container: DiContainer;
 
   // Use a mix of strings and Symbols to test the DependencyToken union type
-  const TOKEN_A = Symbol('TOKEN_A');
-  const TOKEN_B = 'TOKEN_B';
+  const TOKEN_A = Symbol('TOKEN_A') as any;
+  const TOKEN_B = 'TOKEN_B' as any;
 
   beforeEach(() => {
     // Get the singleton instance and clear it before each test
@@ -61,15 +62,15 @@ describe('DiContainer', () => {
 
     it('should allow a factory to resolve its own dependencies from the container', () => {
       // 1. Register a primitive dependency
-      container.registerInstance('CONFIG', { port: 8080 });
+      container.registerInstance('CONFIG' as any, { port: 8080 });
 
       // 2. Register a service that depends on the config
-      container.registerSingleton('SERVER', (c) => {
-        const config = c.resolve<{ port: number }>('CONFIG');
+      container.registerSingleton('SERVER' as any, (c) => {
+        const config = c.resolve<{ port: number }>('CONFIG' as any);
         return `Server running on port ${config.port}`;
       });
 
-      const server = container.resolve<string>('SERVER');
+      const server = container.resolve<string>('SERVER' as any);
       expect(server).toBe('Server running on port 8080');
     });
   });
@@ -79,14 +80,14 @@ describe('DiContainer', () => {
       const UNKNOWN_TOKEN = Symbol('UNKNOWN');
 
       expect(() => {
-        container.resolve(UNKNOWN_TOKEN);
-      }).toThrowError(`DI Error: No service registered for key Symbol(UNKNOWN)`);
+        container.resolve(UNKNOWN_TOKEN as any);
+      }).toThrow(`DI Error: No service registered for key Symbol(UNKNOWN)`);
     });
   });
 
   describe('isRegistered()', () => {
     it('should return false for unregistered tokens', () => {
-      expect(container.isRegistered('MISSING')).toBe(false);
+      expect(container.isRegistered('MISSING' as any)).toBe(false);
     });
 
     it('should return true for a token registered via registerInstance', () => {
@@ -117,8 +118,8 @@ describe('DiContainer', () => {
       expect(container.isRegistered(TOKEN_A)).toBe(false);
       expect(container.isRegistered(TOKEN_B)).toBe(false);
 
-      expect(() => container.resolve(TOKEN_A)).toThrowError();
-      expect(() => container.resolve(TOKEN_B)).toThrowError();
+      expect(() => container.resolve(TOKEN_A)).toThrow();
+      expect(() => container.resolve(TOKEN_B)).toThrow();
     });
   });
 });

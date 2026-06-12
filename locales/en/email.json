@@ -1,0 +1,8 @@
+{
+  "email": {
+    "gdpr": {
+      "renewalSubject": "Action Required: Do you still want to hear from us?",
+      "renewalBodyHtml": "<p>Hi {{firstName}},</p><p>It's been a while! To comply with data protection laws, we need you to confirm if you'd still like to receive our emails.</p><a href=\"{{renewalLink}}\" style=\"padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0;\">Yes, keep me subscribed</a><p>If you don't click the link within {{daysLimit}} days, we will automatically remove your data from our systems.</p>"
+    }
+  }
+}

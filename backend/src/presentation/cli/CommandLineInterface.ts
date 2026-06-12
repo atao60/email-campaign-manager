@@ -4,6 +4,19 @@ import { Command } from 'commander';
 import { type DiContainer } from '@infrastructure/di/DiContainer';
 import { DI_TYPES, PRESENTATION_TYPES } from '@infrastructure/di/Types';
 
+/**
+ * Initializes and executes the Command Line Interface (CLI).
+ * * Usage Examples:
+ * * 1. Merge multiple mailing lists into one:
+ * $ node dist/main.js merge output.csv input1.csv input2.csv --exclude bad_contacts.csv
+ * * 2. Send a marketing campaign from a CSV file:
+ * $ node dist/main.js send-campaign ./data/leads.csv --label "Summer Sale"
+ * * 3. Monitor background email processing status:
+ * $ node dist/main.js campaign-status
+ * * 4. Run a manual GDPR consent compliance check:
+ * $ node dist/main.js gdpr-check
+ * * @param container - The pre-configured DI container instance containing all application services.
+ */
 export async function startCli(container: DiContainer): Promise<void> {
   const program = new Command();
 
@@ -97,6 +110,15 @@ export async function startCli(container: DiContainer): Promise<void> {
         outputService.error('cli:commands.status.error');
         exit(1);
       }
+    });
+
+  program
+    .command('gdpr-check')
+    .description('Manually trigger the GDPR compliance check')
+    .action(async () => {
+      const monitor = container.resolve(DI_TYPES.MonitorExpiringConsentsUseCase);
+      await monitor.execute();
+      console.log('✅ Manual GDPR check complete.');
     });
 
   await program.parseAsync(argv);

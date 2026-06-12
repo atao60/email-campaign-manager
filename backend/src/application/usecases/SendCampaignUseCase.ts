@@ -1,13 +1,18 @@
-import type { CsvPort, EmailPort, LoggerPort, EmailAttachmentDto, EmailMessageDto } from '@domain/ports';
+import { randomUUID } from 'node:crypto';
+
+import type { CsvPort, EmailPort, LoggerPort, EmailAttachmentDto, EmailMessageDto, TimeProvider } from '@domain/ports';
 import type { CampaignHistoryRepository } from '@domain/repositories';
 import type { SentCampaign } from '@domain/models/Campaign';
+import { Contact, ConsentStatus } from '@domain/models/Contact';
+import type { ContactId } from '@domain/models/BrandedTypes';
 
 export class SendCampaignUseCase {
   constructor(
     private readonly csvPort: CsvPort,
     private readonly emailPort: EmailPort,
     private readonly logger: LoggerPort,
-    private readonly historyRepository: CampaignHistoryRepository
+    private readonly historyRepository: CampaignHistoryRepository,
+    private readonly timeProvider: TimeProvider
   ) {}
 
   public async execute(
@@ -15,6 +20,8 @@ export class SendCampaignUseCase {
     subject: string,
     template: { label?: string; html?: string; url?: string; attachments?: EmailAttachmentDto[] }
   ): Promise<number> {
+    const now = this.timeProvider.getCurrentDate();
+
     // Resolve the HTML Content
     let templateHtml: string;
 
@@ -49,10 +56,21 @@ export class SendCampaignUseCase {
     // Process contacts: put them in queue, waiting to be sent
     this.logger.info(`Queuing campaign for ${contacts.length} contacts...`);
 
-    for (const contact of contacts) {
+    for (const row of contacts) {
+      const contact = new Contact(
+        `ctct_${randomUUID()}` as ContactId,
+        row.firstName || '',
+        row.lastName || '',
+        row.email,
+        now, // Using the injected TimeProvider date!
+        row.jobTitle,
+        row.company,
+        ConsentStatus.SUBSCRIBED
+      );
+
       const personalizedHtml = templateHtml
-        .replace(/{{firstName}}/g, contact.firstName)
-        .replace(/{{lastName}}/g, contact.lastName)
+        .replace(/{{firstName}}/g, contact.firstName || '')
+        .replace(/{{lastName}}/g, contact.lastName || '')
         .replace(/{{email}}/g, contact.email);
 
       const messagePayload: EmailMessageDto = {
@@ -74,10 +92,10 @@ export class SendCampaignUseCase {
 
     // Build the campaign record
     const campaignRecord: SentCampaign = {
-      id: `camp_${Date.now()}`,
+      id: `camp_${now.getTime()}`,
       subject: subject,
       ...(template.label && { label: template.label }),
-      sentDate: new Date().toISOString(),
+      sentDate: now.toISOString(),
       totalSent: contacts.length,
       status: 'PARTIAL', // It stays PARTIAL until webhooks confirm delivery or failure
       htmlContent: templateHtml,

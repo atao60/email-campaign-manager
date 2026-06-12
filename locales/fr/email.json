@@ -1,0 +1,8 @@
+{
+  "email": {
+    "gdpr": {
+      "renewalSubject": "Action requise\u00A0: souhaitez-vous toujours recevoir nos emails ?",
+      "renewalBodyHtml": "<p>Bonjour {{firstName}},</p><p>Cela fait un moment\u00A0! Conformément à la réglementation sur la protection des données (RGPD), nous devons nous assurer que vous souhaitez toujours recevoir nos communications.</p><a href=\"{{renewalLink}}\" style=\"padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0;\">Oui, je souhaite rester abonné(e)</a><p>Si vous ne cliquez pas sur ce lien d'ici {{daysLimit}} jours, nous supprimerons automatiquement vos données de nos systèmes.</p>"
+    }
+  }
+}

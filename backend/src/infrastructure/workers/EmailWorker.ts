@@ -2,7 +2,7 @@ import { Worker, type ConnectionOptions, type Job } from 'bullmq';
 import Redis from 'ioredis';
 import { randomUUID } from 'node:crypto';
 
-import type { EmailPort, LoggerPort } from '@domain/ports';
+import type { EmailPort, LoggerPort, TimeProvider } from '@domain/ports';
 import { type FailedEmailRepository } from '@domain/repositories';
 import { Contact } from '@domain/models/Contact';
 import { type ContactId, type FailedEmailId } from '@domain/models/BrandedTypes';
@@ -18,7 +18,8 @@ export class EmailWorker {
     redisClient: Redis,
     private readonly actualMailer: EmailPort, // Injects NodemailerAdapter
     private readonly failedEmailRepo: FailedEmailRepository,
-    private readonly logger: LoggerPort
+    private readonly logger: LoggerPort,
+    private readonly timeProvider: TimeProvider
   ) {
     this.worker = new Worker(
       'email-queue',
@@ -59,7 +60,7 @@ export class EmailWorker {
         job.data.contact.id as ContactId,
         job.data.contact.email,
         err.message,
-        new Date()
+        this.timeProvider.getCurrentDate()
       );
 
       await this.failedEmailRepo.save(failure).catch((repoErr) => {

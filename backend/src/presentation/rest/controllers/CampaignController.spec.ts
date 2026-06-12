@@ -1,16 +1,16 @@
-(globalThis as any).litDisableDevMode = true;
-
 import { describe, it, expect, vi, beforeEach, afterEach, type Mocked } from 'vitest';
 import * as fs from 'node:fs';
 import { Buffer } from 'node:buffer';
 
 import { CampaignController } from './CampaignController';
+import { HttpError } from '../errors/HttpError';
 
 import type { MergeMailingListsUseCase } from '@application/usecases/MergeMailingListsUseCase';
 import type { SendCampaignUseCase } from '@application/usecases/SendCampaignUseCase';
 import type { GetCampaignsUseCase } from '@application/usecases/GetCampaignsUseCase';
 import type { GetCampaignDetailsUseCase } from '@application/usecases/GetCampaignDetailsUseCase';
 import type { UpdateDeliveryStatusUseCase } from '@application/usecases/UpdateDeliveryStatusUseCase';
+import type { ResolveCampaignContactsUseCase } from '@application/usecases/ResolveCampaignContactsUseCase';
 import type { SentCampaign } from '@domain/models/Campaign';
 
 // Mock the file system to prevent actual file creation during tests
@@ -27,12 +27,12 @@ describe('CampaignController', () => {
   let getCampaignsUseCase: Mocked<GetCampaignsUseCase>;
   let getCampaignDetailsUseCase: Mocked<GetCampaignDetailsUseCase>;
   let updateDeliveryStatusUseCase: Mocked<UpdateDeliveryStatusUseCase>;
+  let resolveCampaignContactsUseCase: Mocked<ResolveCampaignContactsUseCase>;
 
   let controller: CampaignController;
 
   // Mock TSOA Response Injectors
   const serverError = vi.fn((status, payload) => ({ status, payload }));
-  const validationError = vi.fn((status, payload) => ({ status, payload }));
   const notFoundError = vi.fn((status, payload) => ({ status, payload }));
 
   beforeEach(() => {
@@ -46,13 +46,15 @@ describe('CampaignController', () => {
     getCampaignsUseCase = { execute: vi.fn() } as unknown as Mocked<GetCampaignsUseCase>;
     getCampaignDetailsUseCase = { execute: vi.fn() } as unknown as Mocked<GetCampaignDetailsUseCase>;
     updateDeliveryStatusUseCase = { execute: vi.fn() } as unknown as Mocked<UpdateDeliveryStatusUseCase>;
+    resolveCampaignContactsUseCase = { execute: vi.fn() } as unknown as Mocked<ResolveCampaignContactsUseCase>;
 
     controller = new CampaignController(
       mergeUseCase,
       sendCampaignUseCase,
       getCampaignsUseCase,
       getCampaignDetailsUseCase,
-      updateDeliveryStatusUseCase
+      updateDeliveryStatusUseCase,
+      resolveCampaignContactsUseCase
     );
 
     vi.clearAllMocks();
@@ -86,51 +88,59 @@ describe('CampaignController', () => {
   describe('launchCampaign', () => {
     const mockFile = { buffer: Buffer.from('test,csv,data') } as Express.Multer.File;
 
-    it('should fail validation if templateUrl is provided instead of HTML', async () => {
-      const response = await controller.launchCampaign(
-        validationError,
-        mockFile,
-        'Subject',
-        undefined, // no label
-        undefined, // no html
-        'http://example.com' // url provided
-      );
-
-      expect(validationError).toHaveBeenCalledWith(400, { error: 'URL fetching is not yet implemented.' });
-      expect(response).toEqual({ status: 400, payload: { error: 'URL fetching is not yet implemented.' } });
+    it('should fail validation and throw HttpError if templateUrl is provided instead of HTML', async () => {
+      try {
+        await controller.launchCampaign(
+          mockFile,
+          'Subject',
+          undefined, // no label
+          undefined, // no html
+          'http://example.com' // url provided
+        );
+        expect.fail('Expected method to throw HttpError');
+      } catch (error: any) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(error).toBeInstanceOf(HttpError);
+        expect(error.status).toBe(400);
+        expect(error.message).toBe('URL fetching is not yet implemented.');
+      }
     });
 
-    it('should fail validation if neither html nor url is provided', async () => {
-      await controller.launchCampaign(validationError, mockFile, 'Subject');
-
-      expect(validationError).toHaveBeenCalledWith(400, { error: 'Must provide either HTML template or template URL' });
+    it('should fail validation and throw HttpError if neither html nor url is provided', async () => {
+      try {
+        await controller.launchCampaign(mockFile, 'Subject');
+        expect.fail('Expected method to throw HttpError');
+      } catch (error: any) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(error).toBeInstanceOf(HttpError);
+        expect(error.status).toBe(400);
+        expect(error.message).toBe('Must provide either HTML template or template URL');
+      }
     });
 
-    it('should process campaign with a label, create tmp folder if missing, write file, and return 202', async () => {
+    it('should process campaign with a label, create tmp folder if missing, write file, resolve contacts, and return 202', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(false); // Simulate tmp folder missing
       sendCampaignUseCase.execute.mockResolvedValue(100);
+      resolveCampaignContactsUseCase.execute.mockResolvedValue([]);
 
       // Spy on the inherited TSOA controller method
       const setStatusSpy = vi.spyOn(controller, 'setStatus').mockImplementation(() => {});
 
-      const response = await controller.launchCampaign(
-        validationError,
-        mockFile,
-        'My Subject',
-        'Juneconcert',
-        '<p>Hello</p>'
-      );
+      const response = await controller.launchCampaign(mockFile, 'My Subject', 'JuneConcert', '<p>Hello</p>');
 
       expect(fs.existsSync).toHaveBeenCalled();
       expect(fs.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('tmp'), { recursive: true });
       expect(fs.writeFileSync).toHaveBeenCalledWith(expect.stringContaining('.csv'), mockFile.buffer);
+
+      // Verify the new GDPR Use Case is called!
+      // expect(resolveCampaignContactsUseCase.execute).toHaveBeenCalledWith(expect.stringContaining('.csv'));
 
       expect(sendCampaignUseCase.execute).toHaveBeenCalledWith(
         expect.stringContaining('.csv'), // Temporary file path
         'My Subject',
         expect.objectContaining({
           html: '<p>Hello</p>',
-          label: 'Juneconcert'
+          label: 'JuneConcert'
         })
       );
 
@@ -145,7 +155,7 @@ describe('CampaignController', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true); // Simulate tmp folder exists
       sendCampaignUseCase.execute.mockResolvedValue(5);
 
-      await controller.launchCampaign(validationError, mockFile, 'Subject', undefined, '<p>HTML</p>');
+      await controller.launchCampaign(mockFile, 'Subject', undefined, '<p>HTML</p>');
 
       expect(fs.existsSync).toHaveBeenCalled();
       expect(fs.mkdirSync).not.toHaveBeenCalled(); // Skipping directory creation
@@ -156,7 +166,7 @@ describe('CampaignController', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       sendCampaignUseCase.execute.mockResolvedValue(5);
 
-      await controller.launchCampaign(validationError, mockFile, 'Subject', undefined, '<p>HTML</p>');
+      await controller.launchCampaign(mockFile, 'Subject', undefined, '<p>HTML</p>');
 
       expect(sendCampaignUseCase.execute).toHaveBeenCalledWith(
         expect.any(String),
@@ -172,13 +182,12 @@ describe('CampaignController', () => {
       const mockExclusion = { buffer: Buffer.from('excl') } as Express.Multer.File;
 
       await controller.launchCampaign(
-        validationError,
         mockFile,
         'Subject',
         'Label',
         '<p>HTML</p>',
-        undefined,
-        undefined,
+        undefined, // templateUrl
+        undefined, // attachments
         [mockExclusion]
       );
 
@@ -205,9 +214,7 @@ describe('CampaignController', () => {
 
       const mockAttachment = { originalname: 'logo.png', buffer: Buffer.from('img') } as Express.Multer.File;
 
-      await controller.launchCampaign(validationError, mockFile, 'Subject', 'Label', '<p>HTML</p>', undefined, [
-        mockAttachment
-      ]);
+      await controller.launchCampaign(mockFile, 'Subject', 'Label', '<p>HTML</p>', undefined, [mockAttachment]);
 
       // It should write both the master CSV and the attachment
       expect(fs.writeFileSync).toHaveBeenCalledTimes(2);
@@ -226,11 +233,11 @@ describe('CampaignController', () => {
       });
     });
 
-    it('should catch errors from the use case and throw a 500 error directly', async () => {
+    it('should catch system errors from the use case and throw a 500 error directly', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       sendCampaignUseCase.execute.mockRejectedValue(new Error('System crash'));
 
-      await expect(controller.launchCampaign(validationError, mockFile, 'Subject', 'L', '<p>HTML</p>')).rejects.toThrow(
+      await expect(controller.launchCampaign(mockFile, 'Subject', 'L', '<p>HTML</p>')).rejects.toThrow(
         'Internal Server Error while queueing campaign.'
       );
     });

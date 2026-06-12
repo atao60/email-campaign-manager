@@ -1,29 +1,25 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mocked } from 'vitest';
 
 import { SendCampaignUseCase } from './SendCampaignUseCase';
 import { type CsvPort } from '@domain/ports/CsvPort';
 import { type EmailPort } from '@domain/ports/EmailPort';
 import { type LoggerPort } from '@domain/ports/LoggerPort';
-import { Contact } from '@domain/models/Contact';
-import { type ContactId } from '@domain/models/BrandedTypes';
 import type { CampaignHistoryRepository } from '@domain/repositories/CampaignHistoryRepository';
+import type { TimeProvider } from '@domain/ports';
 
 describe('SendCampaignUseCase', () => {
   let mockCsvPort: CsvPort;
   let mockEmailPort: EmailPort;
   let mockLogger: LoggerPort;
   let mockHistoryRepo: CampaignHistoryRepository;
+  let mockTimeProvider: Mocked<TimeProvider>;
   let useCase: SendCampaignUseCase;
   let originalFetch: typeof fetch;
 
-  const MOCK_TIME = new Date('2026-05-10T10:00:00Z');
+  const MOCK_NOW = new Date('2026-05-10T10:00:00Z');
 
   beforeEach(() => {
-    // 0. Freeze time for deterministic IDs and dates
-    vi.useFakeTimers();
-    vi.setSystemTime(MOCK_TIME);
-
-    // 1. Create mock implementations of the ports and repositories
+    // Create mock implementations of the ports and repositories
     mockCsvPort = {
       read: vi.fn(),
       write: vi.fn()
@@ -43,18 +39,18 @@ describe('SendCampaignUseCase', () => {
       getById: vi.fn(),
       updateEmailStatus: vi.fn()
     };
+    mockTimeProvider = { getCurrentDate: vi.fn(() => MOCK_NOW) };
 
-    // 2. Inject the mocks into the Use Case
-    useCase = new SendCampaignUseCase(mockCsvPort, mockEmailPort, mockLogger, mockHistoryRepo);
+    // Inject the mocks into the Use Case
+    useCase = new SendCampaignUseCase(mockCsvPort, mockEmailPort, mockLogger, mockHistoryRepo, mockTimeProvider);
 
-    // 3. Backup global fetch for tests that need to mock it
+    // Backup global fetch for tests that need to mock it
     originalFetch = globalThis.fetch;
   });
 
   afterEach(() => {
-    // Restore global fetch, timers, and vi spies
+    // Restore global fetch and vi spies
     globalThis.fetch = originalFetch;
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -78,8 +74,10 @@ describe('SendCampaignUseCase', () => {
 
     it('should fetch template from URL if template.html is not provided but template.url is', async () => {
       // Setup mock data
-      const mockContacts = [new Contact('c-1' as ContactId, 'Alice', 'Smith', 'alice@test.com', 'Dev', 'Acme')];
-      vi.mocked(mockCsvPort.read).mockResolvedValue(mockContacts);
+      const mockCsvRows = [
+        { firstName: 'Alice', lastName: 'Smith', email: 'alice@test.com', jobTitle: 'Dev', company: 'Acme' }
+      ];
+      vi.mocked(mockCsvPort.read).mockResolvedValue(mockCsvRows);
 
       // Mock a successful fetch response
       const mockHtml = '<p>Remote Hello {{firstName}}</p>';
@@ -94,16 +92,16 @@ describe('SendCampaignUseCase', () => {
 
       expect(globalThis.fetch).toHaveBeenCalledWith('http://example.com/template.html');
       expect(result).toBe(1);
-      expect(mockEmailPort.send).toHaveBeenCalledWith(mockContacts[0], {
-        subject: 'Remote Subject',
-        bodyHtml: '<p>Remote Hello Alice</p>'
-      });
+      expect(mockEmailPort.send).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'alice@test.com', firstName: 'Alice' }),
+        { subject: 'Remote Subject', bodyHtml: '<p>Remote Hello Alice</p>' }
+      );
 
       // Verify the campaign history was saved correctly
       expect(mockHistoryRepo.save).toHaveBeenCalledWith({
-        id: `camp_${MOCK_TIME.getTime()}`,
+        id: `camp_${MOCK_NOW.getTime()}`,
         subject: 'Remote Subject',
-        sentDate: MOCK_TIME.toISOString(),
+        sentDate: MOCK_NOW.toISOString(),
         totalSent: 1,
         status: 'PARTIAL',
         htmlContent: mockHtml,
@@ -158,8 +156,8 @@ describe('SendCampaignUseCase', () => {
   describe('Campaign Execution', () => {
     it('should queue an email for each contact replacing all variables, save history, and return the processed count', async () => {
       const mockContacts = [
-        new Contact('c-1' as ContactId, 'Alice', 'Smith', 'alice@test.com', 'Dev', 'Acme'),
-        new Contact('c-2' as ContactId, 'Bob', 'Jones', 'bob@test.com', 'QA', 'Acme')
+        { firstName: 'Alice', lastName: 'Smith', email: 'alice@test.com', jobTitle: 'Dev', company: 'Acme' },
+        { firstName: 'Bob', lastName: 'Jones', email: 'bob@test.com', jobTitle: 'QA', company: 'Acme' }
       ];
       vi.mocked(mockCsvPort.read).mockResolvedValue(mockContacts);
 
@@ -170,21 +168,23 @@ describe('SendCampaignUseCase', () => {
       expect(result).toBe(2);
 
       // Verify email queued logic
-      expect(mockEmailPort.send).toHaveBeenNthCalledWith(1, mockContacts[0], {
-        subject: 'Welcome',
-        bodyHtml: '<h1>Hello Alice Smith (alice@test.com)</h1>'
-      });
-      expect(mockEmailPort.send).toHaveBeenNthCalledWith(2, mockContacts[1], {
-        subject: 'Welcome',
-        bodyHtml: '<h1>Hello Bob Jones (bob@test.com)</h1>'
-      });
+      expect(mockEmailPort.send).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ email: 'alice@test.com', firstName: 'Alice' }),
+        { subject: 'Welcome', bodyHtml: '<h1>Hello Alice Smith (alice@test.com)</h1>' }
+      );
+      expect(mockEmailPort.send).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ email: 'bob@test.com', firstName: 'Bob' }),
+        { subject: 'Welcome', bodyHtml: '<h1>Hello Bob Jones (bob@test.com)</h1>' }
+      );
       expect(mockLogger.info).toHaveBeenCalledWith('All emails successfully queued to Redis.');
 
       // Verify campaign record saved correctly
       expect(mockHistoryRepo.save).toHaveBeenCalledWith({
-        id: `camp_${MOCK_TIME.getTime()}`,
+        id: `camp_${MOCK_NOW.getTime()}`,
         subject: 'Welcome',
-        sentDate: MOCK_TIME.toISOString(),
+        sentDate: MOCK_NOW.toISOString(),
         totalSent: 2,
         status: 'PARTIAL',
         htmlContent: template,
@@ -196,8 +196,8 @@ describe('SendCampaignUseCase', () => {
     });
 
     it('should include attachments in the email payload if provided', async () => {
-      const mockContacts = [new Contact('c-1' as ContactId, 'Alice', 'Smith', 'alice@test.com', '', '')];
-      vi.mocked(mockCsvPort.read).mockResolvedValue(mockContacts);
+      const mockCsvRows = [{ firstName: 'Alice', lastName: 'Smith', email: 'alice@test.com' }];
+      vi.mocked(mockCsvPort.read).mockResolvedValue(mockCsvRows);
 
       const mockAttachments = [{ filename: 'test.pdf', path: '/tmp/test.pdf', cid: 'test.pdf' }];
 
@@ -207,7 +207,7 @@ describe('SendCampaignUseCase', () => {
       });
 
       // Verify that the attachments array was passed to the email port
-      expect(mockEmailPort.send).toHaveBeenCalledWith(mockContacts[0], {
+      expect(mockEmailPort.send).toHaveBeenCalledWith(expect.objectContaining({ email: 'alice@test.com' }), {
         subject: 'Subject with Attachment',
         bodyHtml: '<p>Hi</p>',
         attachments: mockAttachments

@@ -2,30 +2,36 @@ import fs from 'node:fs';
 import csvParser from 'csv-parser';
 import { createObjectCsvWriter } from 'csv-writer';
 
-import { type CsvPort } from '@domain/ports';
+import { type CsvPort, type CsvRow } from '@domain/ports';
 import { Contact } from '@domain/models/Contact';
-import { type ContactId } from '@domain/models/BrandedTypes';
 
 export class CsvAdapter implements CsvPort {
-  public async read(filePath: string): Promise<Contact[]> {
+  public async read(filePath: string): Promise<CsvRow[]> {
     return new Promise((resolve, reject) => {
-      const results: Contact[] = [];
+      const results: CsvRow[] = [];
 
-      fs.createReadStream(filePath)
+      const readStream = fs.createReadStream(filePath);
+
+      // Catch file system errors (like ENOENT) immediately on the source stream
+      readStream.on('error', (error) => {
+        reject(error);
+      });
+
+      readStream
         .pipe(csvParser())
         .on('data', (data) => {
-          // Map the raw CSV row string data to our strongly-typed Domain Entity
-          const contact = new Contact(
-            data.id as ContactId,
-            data.firstName,
-            data.lastName,
-            data.email,
-            data.jobTitle,
-            data.company
-          );
-          results.push(contact);
+          const row: CsvRow = {
+            // data.id as ContactId,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            jobTitle: data.jobTitle,
+            company: data.company
+          };
+          results.push(row);
         })
         .on('end', () => resolve(results))
+        // Catch parsing errors from the CSV parser itself
         .on('error', (error) => reject(error));
     });
   }

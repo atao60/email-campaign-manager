@@ -1,10 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mocked } from 'vitest';
 import { Worker, type Job } from 'bullmq';
 import Redis from 'ioredis';
 
 import { EmailWorker } from './EmailWorker';
-import { type EmailPort } from '@domain/ports/EmailPort';
-import { type LoggerPort } from '@domain/ports/LoggerPort';
+import type { EmailPort, LoggerPort, TimeProvider } from '@domain/ports';
 import { type FailedEmailRepository } from '@domain/repositories/FailedEmailRepository';
 import { Contact } from '@domain/models/Contact';
 
@@ -42,9 +41,10 @@ describe('EmailWorker', () => {
   let mockFailedEmailRepo: FailedEmailRepository;
   let mockLogger: LoggerPort;
   let mockRedisClient: Redis;
+  let mockTimeProvider: Mocked<TimeProvider>;
   let emailWorker: EmailWorker;
 
-  const MOCK_TIME = new Date('2026-05-10T10:00:00Z');
+  const MOCK_NOW = new Date('2026-05-10T10:00:00Z');
 
   // Helper mock job data
   const mockJob = {
@@ -68,8 +68,6 @@ describe('EmailWorker', () => {
   } as unknown as Job;
 
   beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(MOCK_TIME);
     vi.clearAllMocks();
 
     mockEmailPort = {
@@ -86,12 +84,9 @@ describe('EmailWorker', () => {
       error: vi.fn()
     };
     mockRedisClient = new Redis() as unknown as Redis;
+    mockTimeProvider = { getCurrentDate: vi.fn(() => MOCK_NOW) };
 
-    emailWorker = new EmailWorker(mockRedisClient, mockEmailPort, mockFailedEmailRepo, mockLogger);
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
+    emailWorker = new EmailWorker(mockRedisClient, mockEmailPort, mockFailedEmailRepo, mockLogger, mockTimeProvider);
   });
 
   // --- Helper Functions to extract mocked BullMQ internals ---
@@ -172,7 +167,7 @@ describe('EmailWorker', () => {
       expect(savedFailure?.contactId).toBe('c-1');
       expect(savedFailure?.emailAddress).toBe('alice@test.com');
       expect(savedFailure?.reason).toBe('Bounced email');
-      expect(savedFailure?.failedAt).toEqual(MOCK_TIME); // Proves the mocked date was used
+      expect(savedFailure?.failedAt).toEqual(MOCK_NOW); // Proves the mocked date was used
     });
 
     it('should log a CRITICAL error if saving the failure record to the repository fails', async () => {

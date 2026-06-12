@@ -24,8 +24,10 @@ import type {
   GetCampaignDetailsUseCase,
   UpdateDeliveryStatusUseCase,
   SendCampaignUseCase,
-  GetCampaignsUseCase
+  GetCampaignsUseCase,
+  ResolveCampaignContactsUseCase
 } from '@application/usecases/';
+import { HttpError } from '../errors/HttpError';
 
 interface MergePayload {
   inputs: string[];
@@ -56,13 +58,15 @@ export class CampaignController extends Controller {
   private readonly getCampaignsUseCase: GetCampaignsUseCase;
   private readonly getCampaignDetailsUseCase: GetCampaignDetailsUseCase;
   private readonly updateDeliveryStatusUseCase: UpdateDeliveryStatusUseCase;
+  private readonly resolveCampaignContactsUseCase: ResolveCampaignContactsUseCase;
 
   constructor(
     mergeUseCase: MergeMailingListsUseCase,
     sendCampaignUseCase: SendCampaignUseCase,
     getCampaignsUseCase: GetCampaignsUseCase,
     getCampaignDetailsUseCase: GetCampaignDetailsUseCase,
-    updateDeliveryStatusUseCase: UpdateDeliveryStatusUseCase
+    updateDeliveryStatusUseCase: UpdateDeliveryStatusUseCase,
+    resolveCampaignContactsUseCase: ResolveCampaignContactsUseCase
   ) {
     super();
     this.mergeUseCase = mergeUseCase;
@@ -70,6 +74,7 @@ export class CampaignController extends Controller {
     this.getCampaignsUseCase = getCampaignsUseCase;
     this.getCampaignDetailsUseCase = getCampaignDetailsUseCase;
     this.updateDeliveryStatusUseCase = updateDeliveryStatusUseCase;
+    this.resolveCampaignContactsUseCase = resolveCampaignContactsUseCase;
   }
 
   @Post('merge')
@@ -90,10 +95,11 @@ export class CampaignController extends Controller {
 
   @Post('send')
   @SuccessResponse('202', 'Accepted')
+  @TsoaResponseDoc<{ error: string }>('400', 'Validation Error')
   @TsoaResponseDoc<{ error: string }>('500', 'Internal Server Error')
   public async launchCampaign(
     // RESPONDERS (Outputs - Required)
-    @Res() validationError: TsoaResponse<400, { error: string }>,
+    // @Res() validationError: TsoaResponse<400, { error: string }>,
     // @Res() acceptedResponse: TsoaResponse<202, LaunchCampaignResponse>,
 
     // FORM DATA (Inputs - Required first, Optional last)
@@ -117,9 +123,9 @@ export class CampaignController extends Controller {
       if (templateHtml) {
         finalHtmlContent = templateHtml;
       } else if (templateUrl) {
-        return validationError(400, { error: 'URL fetching is not yet implemented.' });
+        throw new HttpError(400, 'URL fetching is not yet implemented.');
       } else {
-        return validationError(400, { error: 'Must provide either HTML template or template URL' });
+        throw new HttpError(400, 'Must provide either HTML template or template URL');
       }
 
       // Handle the uploaded file
@@ -160,6 +166,10 @@ export class CampaignController extends Controller {
         processed: processedCount
       };
     } catch (error: unknown) {
+      if (error instanceof HttpError) {
+        throw error;
+      }
+
       console.error(`Launch campaign error:`, error);
       throw new Error('Internal Server Error while queueing campaign.', { cause: error });
     }
@@ -250,6 +260,7 @@ export class CampaignController extends Controller {
   // Example Webhook Endpoint in a Controller
   @Post('webhooks/email-status')
   public async handleEmailProviderWebhook(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @Body() payload: any // The exact shape depends on the provider (SendGrid, etc.)
   ) {
     // Example: Parsing a theoretical SendGrid webhook payload
