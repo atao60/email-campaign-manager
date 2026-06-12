@@ -7,7 +7,8 @@ Think of it as a personal, dedicated Email Service Provider (ESP) hosted under y
 
 - File-Based Persistence: Operates without a traditional database; all data, including address lists, are stored in text files.
 - Flexible List Management: Supports advanced address list operations, including merging and creating mutually exclusive segments.
-- Hybrid Execution Engine: Redis and BullMQ as a high-performance runtime engine (queue management, job retries, asynchronous campaigns)
+- Hybrid Execution Engine: Redis and BullMQ as a high-performance runtime engine (queue management, job retries, asynchronous campaigns).
+- [GDPR](https://eur-lex.europa.eu/eli/reg/2016/679/oj) Compliance & Consent Lifecycle: Automated management of subscriber consent, including expiration tracking, automated renewal requests, and built-in support for the "Right to be Forgotten" via automated data anonymization.
 - Multi-Interface Support: Provides comprehensive control via CLI, REST API, a dedicated programming interface, and a web-based UI.
 - SMTP Versatility: Compatible with any standard SMTP provider. For development, the system integrates seamlessly with Maildev.
 - _Future Roadmap: An integrated local Mail Transfer Agent (MTA)._
@@ -123,3 +124,5 @@ Clean Architecture: A Craftsman's Guide to Software Structure and Design, Robert
 
 [RFC 3986 (Uniform Resource Identifier - URI)](https://www.rfc-editor.org/rfc/rfc3986.html):
 **Relevance:** Defines how resources should be identified and addressed on the web, which is fundamental to REST API routing.
+
+[Regulation (EU) 2016/679 of the European Parliament and of the Council of 27 April 2016 on the protection of natural persons with regard to the processing of personal data and on the free movement of such data](https://eur-lex.europa.eu/eli/reg/2016/679/oj), and repealing Directive 95/46/EC **(General Data Protection Regulation)**

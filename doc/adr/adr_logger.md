@@ -1,20 +1,22 @@
 # User Interface Output and System Telemetry
 
+## Rational
+
 In software engineering, it's particularly important to maintain a distinction between User Interface Output and System Telemetry.
 
 Mixing them up can harm both the user experience and the application monitoring:
 
-1. User Communication vs. System Telemetry
+### User Communication vs. System Telemetry
 
 - User Output: This is the direct response to a human's command. When a user runs merge listA.csv listB.csv, they expect a clean, human-readable confirmation like: "Successfully merged lists into data/merged.csv".
 
 - Application Logging: This is telemetry meant for developers, system administrators, or log aggregation tools (like Datadog, Kibana, or Splunk). It records how the system is behaving under the hood.
 
-1. Structured message vs. user readable message
+### Structured message vs. user readable message
 
 Often the log message are structured to be used by automatic tools, e.g., in json. Therefore not ready to be read by a user.
 
-3. The UNIX Philosophy
+### The UNIX Philosophy
 
 Standard UNIX command-line principles dictate a strict separation of streams:
 

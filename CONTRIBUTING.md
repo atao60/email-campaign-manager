@@ -17,11 +17,10 @@ We'd like to emphasize these points:
 
 ## License
 
-By contributing to `@atao60/personal-mailing-manager`, you agree that your contributions will be licensed under its [MIT](LICENSE) license.
+By contributing to `@atao60/email-campaign-manager`, you agree that your contributions will be licensed under its [MIT](LICENSE) license.
 
 ## Roadmap
 
-- compliance with the [GDPR](https://eur-lex.europa.eu/eli/reg/2016/679/oj)
 - i18n for messages between backend and client
 - logger with pino
 - form to update contacts files
@@ -140,7 +139,7 @@ Both do the same thing: they will automatically open a tab under the current bro
 
 #### Scripts
 
-All the scripts in package.json are cross-platform, at least under [Linux](https://www.linuxfoundation.org/) ([Bash](https://www.gnu.org/software/bash/)),
+All the scripts in package.json are cross-platform, at least under [Linux](https://www.linuxfoundation.org/),
 [Windows](https://www.microsoft.com/windows/) and [Mac OS X](https://www.apple.com/macos).
 
 To make sure your npm scripts work across different platforms, you cannot rely on environment specific tools.
