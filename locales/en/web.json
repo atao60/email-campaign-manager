@@ -28,7 +28,12 @@
     "sentTotal": "Sent: {{sent}} | Total: {{total}}",
     "templatePreview": "Template Preview",
     "title": "Campaign History",
-    "jumpToPreview": "Aller à l'aperçu"
+    "jumpToPreview": "Jump to Preview",
+    "status": {
+      "PARTIAL": "IN PROGRESS",
+      "COMPLETED": "COMPLETED",
+      "FAILED": "FAILED"
+    }
   },
   "launcher": {
     "contactsCsv": "Contacts (CSV File)",

@@ -183,8 +183,6 @@ export class CampaignHistory extends LitElement {
     return html`
       <button class="back" @click=${this.handleBackClick}>${t('history.back')}</button>
 
-      ${c.label ? html`<div class="details-label">${c.label}</div>` : ''}
-
       <div class="details-header-layout">
         <div>
           <h2 class="details-title">${c.label || c.subject}</h2>

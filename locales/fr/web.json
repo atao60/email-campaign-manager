@@ -28,7 +28,12 @@
     "sentTotal": "Envoyés\u00A0: {{sent}} | Total\u00A0: {{total}}",
     "templatePreview": "Aperçu du modèle",
     "title": "Historique des campagnes",
-    "jumpToPreview": "Jump to Preview"
+    "jumpToPreview": "Aller à l'aperçu",
+    "status": {
+      "PARTIAL": "EN COURS",
+      "COMPLETED": "TERMINÉS",
+      "FAILED": "EN ÉCHEC"
+    }
   },
   "launcher": {
     "contactsCsv": "Contacts (fichier CSV)",
