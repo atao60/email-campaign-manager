@@ -95,9 +95,9 @@ Copyright &copy; 2026 [Pierre Raoul](https://github.com/atao60).
 
 ## 📜 Credits
 
-Google Gemini has been widely used.
+[Google Gemini](https://gemini.google.com) has been widely used.
 
-### Standards
+### Reference material
 
 [Hexagonal architecture (Ports and Adapters)](https://alistair.cockburn.us/hexagonal-architecture), Cockburn, A. (2005)
 
@@ -118,6 +118,8 @@ Clean Architecture: A Craftsman's Guide to Software Structure and Design, Robert
 
 [RESTful Web Services](http://restfulwebapis.com/RESTful_Web_Services.pdf), Leonard Richardson and Sam Ruby (O'Reilly Media, 2007)
 **Relevance:** Bridges the gap between Fielding's academic dissertation and practical, real-world web development.
+
+### Standards
 
 [RFC 9110 (HTTP Semantics)](https://www.rfc-editor.org/rfc/rfc9110.html):
 **Relevance:** This document replaces older RFCs (like RFC 2616 and 7231). It defines the core semantics of HTTP, including HTTP methods (`GET`, `POST`, `PUT`, `DELETE`, etc.) and HTTP status codes, which form the "Uniform Interface" constraint of REST.
